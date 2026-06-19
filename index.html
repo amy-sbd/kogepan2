@@ -1,0 +1,1263 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <!-- スマホ向けの表示最適化 -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>こげぱんの英単語ベーカリー</title>
+
+  <!-- 本物のアプリのように起動するためのPWA設定 -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="こげぱん英語">
+  <link rel="manifest" href='data:application/json,{"name":"こげぱんの英単語ベーカリー","short_name":"こげぱん英語","start_url":".","display":"standalone","background_color":"#FDFBF7","theme_color":"#7F5539"}'>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Kiwi+Maru:wght@300;400;500&family=Yusei+Magic&display=swap" rel="stylesheet">
+  
+  <style>
+    body {
+      font-family: 'Kiwi Maru', serif;
+      background-color: #FDFBF7;
+      /* スマホの長押しや選択を防止 */
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      user-select: none;
+      /* タップ時の青いハイライトを消す */
+      -webkit-tap-highlight-color: transparent;
+    }
+    .font-magic {
+      font-family: 'Yusei+Magic', sans-serif;
+    }
+    /* ぷにぷにしたボタンアニメーション */
+    .btn-bounce {
+      transition: transform 0.1s ease, box-shadow 0.1s ease;
+    }
+    .btn-bounce:active {
+      transform: scale(0.95);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    /* スクロールバーの非表示（すっきり見せるため） */
+    ::-webkit-scrollbar {
+      width: 4px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #DDB892;
+      border-radius: 10px;
+    }
+  </style>
+</head>
+<body class="text-amber-900 overflow-x-hidden">
+
+  <!-- 全体ラッパー（スマホ画面にぴったりフィット） -->
+  <div class="max-w-md mx-auto min-h-screen flex flex-col justify-between bg-[#FDFBF7] shadow-xl border-x border-amber-100 relative overflow-hidden pb-8">
+    
+    <!-- ヘッダー -->
+<header class="bg-[#E6CCB2] p-4 text-center border-b-4 border-[#B08968] flex justify-between items-center z-10 pt-6">
+  <div class="flex items-center gap-2">
+    <span class="text-2xl">🍞</span>
+    <h1 class="font-bold text-amber-950 text-base">こげぱんの英単語ベーカリー</h1>
+  </div>
+
+  <div class="flex gap-1">
+    <button onclick="app.showDataModal()" class="text-xs bg-[#9C6644] text-white px-2.5 py-1.5 rounded-full btn-bounce font-bold shadow-sm">
+      セーブ 💾
+    </button>
+
+    <button onclick="app.showWordList()" class="text-xs bg-[#7F5539] text-white px-2.5 py-1.5 rounded-full btn-bounce font-bold shadow-sm">
+      ずかん 📖
+    </button>
+  </div>
+</header>
+
+    <!-- メインコンテンツ領域 -->
+    <main class="flex-grow p-4 flex flex-col justify-start relative z-10">
+      
+      <!-- 1. スタート画面 -->
+      <div id="screen-start" class="flex flex-col items-center justify-center py-6 text-center space-y-6">
+        <!-- こげぱんSVGイラスト -->
+        <div class="relative w-44 h-44 my-2 animate-bounce" style="animation-duration: 4s;">
+          <svg viewBox="0 0 200 200" class="w-full h-full">
+            <!-- こげたアンパンの体 -->
+            <ellipse cx="100" cy="110" rx="75" ry="60" fill="#5C4033" stroke="#3D2B1F" stroke-width="6"/>
+            <!-- 焦げグラデーション（頭のてっぺん） -->
+            <ellipse cx="100" cy="85" rx="55" ry="30" fill="#3D2B1F" opacity="0.8"/>
+            <!-- しょんぼりした目 -->
+            <path d="M 70 105 Q 80 110 85 105" fill="none" stroke="#221100" stroke-width="5" stroke-linecap="round"/>
+            <path d="M 130 105 Q 120 110 115 105" fill="none" stroke="#221100" stroke-width="5" stroke-linecap="round"/>
+            <!-- への字の口 -->
+            <path d="M 90 128 Q 100 120 110 128" fill="none" stroke="#221100" stroke-width="5" stroke-linecap="round"/>
+            <!-- ほっぺ -->
+            <circle cx="65" cy="118" r="8" fill="#8B4F39" opacity="0.6"/>
+            <circle cx="135" cy="118" r="8" fill="#8B4F39" opacity="0.6"/>
+            <!-- 短い手足 -->
+            <path d="M 50 145 Q 40 160 55 160" fill="none" stroke="#3D2B1F" stroke-width="6" stroke-linecap="round"/>
+            <path d="M 150 145 Q 160 160 145 160" fill="none" stroke="#3D2B1F" stroke-width="6" stroke-linecap="round"/>
+            <path d="M 85 168 Q 85 180 95 178" fill="none" stroke="#3D2B1F" stroke-width="6" stroke-linecap="round"/>
+            <path d="M 115 168 Q 115 180 105 178" fill="none" stroke="#3D2B1F" stroke-width="6" stroke-linecap="round"/>
+            <!-- やさぐれミルク瓶 -->
+            <rect x="145" cy="125" width="25" height="40" rx="5" fill="#EAEAEA" stroke="#333" stroke-width="2"/>
+            <rect x="145" cy="135" width="25" height="15" fill="#FFF"/>
+            <text x="150" y="147" font-size="10" fill="#7F5539" font-weight="bold">牛乳</text>
+          </svg>
+          <div class="absolute -top-4 -right-2 bg-white text-xs p-2 rounded-xl shadow border border-amber-200 text-left w-36 rotate-6">
+            「どうせこげてるし…勉強したって、おいしく食べてもらえないよ…」
+          </div>
+        </div>
+
+        <div class="bg-amber-100/70 p-4 rounded-2xl border border-amber-200 w-full shadow-sm">
+          <p class="text-sm font-bold text-amber-950 mb-1">🍞 本日のパン焼き状況 🍞</p>
+          <div class="w-full bg-amber-200 rounded-full h-4 overflow-hidden mb-2">
+            <div id="total-progress-bar" class="bg-amber-600 h-full transition-all duration-500" style="width: 0%"></div>
+          </div>
+          <p id="total-progress-text" class="text-xs text-amber-900">ロード中...</p>
+        </div>
+
+        <button onclick="app.startRound()" class="w-full bg-[#9C6644] hover:bg-[#7F5539] text-white text-lg font-bold py-4 px-6 rounded-2xl shadow-lg border-b-4 border-[#5C4033] btn-bounce flex items-center justify-center gap-2">
+          <span>🥖</span> レッスンをはじめる（10問）
+        </button>
+
+        <button onclick="app.confirmReset()" class="text-xs text-amber-600 underline">
+          はじめからやり直す（リセット）
+        </button>
+      </div>
+
+      <!-- 2. クイズ画面 -->
+      <div id="screen-quiz" class="hidden flex-col space-y-4">
+        <!-- 進捗メーター -->
+        <div class="flex justify-between items-center text-xs px-1">
+          <span id="quiz-question-number" class="font-bold bg-amber-200 text-amber-900 px-3 py-1 rounded-full">第 1 / 10 問</span>
+          <span id="quiz-current-stage" class="font-bold text-amber-700 bg-amber-100 px-3 py-1 rounded-full text-center">ステージ 1：日本語 ➔ 英語</span>
+        </div>
+
+        <!-- ターゲットワードの焼き加減ゲージ -->
+        <div id="word-level-indicator" class="bg-amber-50 p-3 rounded-xl border border-amber-100 flex items-center justify-between text-xs">
+          <span>この単語の焼き上がり度:</span>
+          <div class="flex gap-1" id="star-container">
+            <!-- JSで状態を生成 -->
+          </div>
+        </div>
+
+        <!-- 問題表示エリア -->
+        <div class="bg-white rounded-3xl p-6 border-2 border-amber-200 shadow-md text-center space-y-4 relative">
+          <div class="absolute -top-3 left-4 bg-[#7F5539] text-white text-xs px-2 py-0.5 rounded">
+            もんだい
+          </div>
+          <p class="text-xs text-amber-600 font-bold" id="quiz-part-of-speech">【名詞】</p>
+          <h2 class="text-3xl font-bold tracking-wide text-amber-950 font-magic min-h-[3.5rem] flex items-center justify-center" id="quiz-question-prompt">
+            りんご
+          </h2>
+          <!-- ステージ3の時のヒント表示 -->
+          <p id="quiz-hint" class="text-xs text-amber-500 hidden bg-amber-50 p-2 rounded-lg border border-dashed border-amber-200"></p>
+        </div>
+
+        <!-- 選択肢エリア（4択） -->
+        <div id="quiz-choices" class="grid grid-cols-1 gap-3 pt-2">
+          <!-- 選択肢ボタン -->
+        </div>
+
+        <!-- 入力エリア（記述式 - ステージ3用） -->
+        <div id="quiz-input-area" class="hidden flex-col space-y-3 pt-2">
+          <input type="text" id="quiz-typed-answer" autocomplete="off" placeholder="ここに英語のつづりをかいてね" class="w-full p-4 border-2 border-amber-300 rounded-2xl text-center text-xl font-bold focus:outline-none focus:border-amber-600 text-amber-950 bg-white">
+          <button onclick="app.submitTypedAnswer()" class="w-full bg-[#7F5539] text-white py-4 rounded-2xl font-bold text-lg btn-bounce shadow-md">
+            これで決まり！ 🍞
+          </button>
+        </div>
+      </div>
+
+      <!-- 3. フィードバック画面 -->
+      <div id="screen-feedback" class="hidden flex-col items-center py-4 space-y-6">
+        <!-- キャラクター画像エリア (SVG) -->
+        <div class="w-40 h-40 relative" id="feedback-character-container">
+          <!-- JSでSVGをロード -->
+        </div>
+
+        <!-- 判定メッセージ -->
+        <div id="feedback-result-banner" class="text-center">
+          <!-- テキスト -->
+        </div>
+
+        <!-- 解説・褒め言葉カード -->
+        <div class="bg-white rounded-2xl p-5 border-2 border-amber-100 shadow-md w-full text-center space-y-3">
+          <div class="text-xs text-amber-500 uppercase tracking-wider font-bold">今回の単語</div>
+          <div class="text-2xl font-bold text-amber-950 font-magic" id="feedback-word-title">apple</div>
+          <div class="text-sm text-amber-700" id="feedback-word-meaning">りんご</div>
+          <hr class="border-amber-100 my-2">
+          <p class="text-sm leading-relaxed text-amber-900 font-medium whitespace-pre-wrap text-left" id="feedback-text">
+            ここにテキストが入ります。
+          </p>
+        </div>
+
+        <button onclick="app.nextQuestion()" class="w-full bg-[#9C6644] hover:bg-[#7F5539] text-white text-lg font-bold py-4 rounded-2xl shadow-lg border-b-4 border-[#5C4033] btn-bounce">
+          つぎの問題へ ➔
+        </button>
+      </div>
+
+      <!-- 4. ラウンド終了リザルト画面 -->
+      <div id="screen-result" class="hidden flex-col items-center py-6 space-y-6">
+        <div class="text-center">
+          <h2 class="text-2xl font-bold text-amber-950">おつかれさま！</h2>
+          <p class="text-sm text-amber-600">本日の焼き上がり結果発表！</p>
+        </div>
+
+        <!-- 焼き上がり結果のパンかご -->
+        <div class="bg-amber-100/50 p-4 rounded-2xl border border-amber-200 w-full text-center space-y-3">
+          <div class="text-5xl">🧺🥖✨</div>
+          <p class="text-sm font-bold" id="result-score-text">10問中 8問 正解！</p>
+          <p class="text-xs text-amber-700 leading-relaxed" id="result-summary-comment">
+            コメントが入ります。
+          </p>
+        </div>
+
+        <!-- 今回の単語ステータス変化 -->
+        <div class="w-full space-y-2">
+          <p class="text-xs font-bold text-amber-800">✨ 今回学習した単語の進み具合</p>
+          <div id="result-words-list" class="max-h-48 overflow-y-auto space-y-2 pr-1">
+            <!-- 進捗リスト -->
+          </div>
+        </div>
+
+        <button onclick="app.showStartScreen()" class="w-full bg-[#7F5539] text-white text-lg font-bold py-4 rounded-2xl shadow-lg border-b-4 border-[#5C4033] btn-bounce">
+          もういちど挑戦する 🍞
+        </button>
+      </div>
+
+      <!-- 5. 単語図鑑・一覧画面 -->
+      <div id="screen-wordlist" class="hidden flex-col space-y-4">
+        <div class="flex justify-between items-center">
+          <h2 class="text-lg font-bold text-amber-950">パン焼き図鑑（全100語）</h2>
+          <button onclick="app.showStartScreen()" class="text-xs bg-amber-200 text-amber-900 px-3 py-1.5 rounded-full font-bold shadow-sm">
+            戻る ✖
+          </button>
+        </div>
+
+        <p class="text-[11px] text-amber-600 leading-relaxed">
+          中学1年レベルの基本英単語です。すべての単語を「極上のきれいぱん（ステージ3クリア）」に焼き上げよう！
+        </p>
+
+        <!-- 図鑑フィルターボタン -->
+        <div class="flex gap-1 text-xs justify-between overflow-x-auto pb-1">
+          <button onclick="app.filterWordList('all')" id="btn-filter-all" class="bg-amber-700 text-white px-2 py-1.5 rounded-md shrink-0">すべて</button>
+          <button onclick="app.filterWordList('stage1')" id="btn-filter-stage1" class="bg-amber-100 text-amber-800 px-2 py-1.5 rounded-md shrink-0">タネ(S1)</button>
+          <button onclick="app.filterWordList('stage2')" id="btn-filter-stage2" class="bg-amber-100 text-amber-800 px-2 py-1.5 rounded-md shrink-0">半焼き(S2)</button>
+          <button onclick="app.filterWordList('stage3')" id="btn-filter-stage3" class="bg-amber-100 text-amber-800 px-2 py-1.5 rounded-md shrink-0">きれいぱん(クリア)</button>
+        </div>
+
+        <!-- 図鑑リストスクロール領域 -->
+        <div id="word-list-container" class="space-y-2 overflow-y-auto max-h-[55vh] pr-1">
+          <!-- 全100語カード -->
+        </div>
+      </div>
+
+    </main>
+
+    <!-- フッター -->
+    <footer class="text-center text-xs text-amber-600/70 pt-4 px-4 z-10">
+      <div class="border-t border-amber-200/50 pt-2 flex justify-between items-center">
+        <span>© San-X Co., Ltd. Fanmade</span>
+        <span id="footer-character-status">こげぱんは牛乳を飲んで寝ています...💤</span>
+      </div>
+    </footer>
+  </div>
+
+  <!-- カスタム確認ダイアログ (ブラウザのconfirmの代わり) -->
+  <div id="custom-confirm-modal" class="hidden fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+    <div class="bg-[#FDFBF7] p-6 rounded-3xl max-w-xs w-full text-center space-y-4 border-4 border-[#B08968] shadow-2xl">
+      <div class="text-4xl">🍞💦</div>
+      <h4 class="text-base font-bold text-amber-950 font-magic">リセットしますか？</h4>
+      <p class="text-xs text-amber-800 leading-relaxed">
+        これまでのパン焼き記録をすべて消して、最初からやり直します。本当にいいのかな…？
+      </p>
+      <div class="flex gap-3 justify-center pt-2">
+        <button onclick="app.closeResetModal()" class="w-1/2 bg-amber-100 hover:bg-amber-200 text-amber-900 py-2.5 rounded-xl text-xs font-bold btn-bounce border border-amber-300">
+          やめる
+        </button>
+        <button onclick="app.executeReset()" class="w-1/2 bg-[#7F5539] hover:bg-[#5C4033] text-white py-2.5 rounded-xl text-xs font-bold btn-bounce shadow-md">
+          リセットする
+        </button>
+      </div>
+    </div>
+  </div>
+<!-- データ管理（セーブ・復元）モーダル -->
+<div id="data-management-modal" class="hidden fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+  <div class="bg-[#FDFBF7] p-6 rounded-3xl max-w-sm w-full text-center space-y-4 border-4 border-[#B08968] shadow-2xl">
+    <div class="flex justify-between items-center border-b border-amber-100 pb-2">
+      <h4 class="text-base font-bold text-amber-950 font-magic">🍞 データのセーブと復元</h4>
+      <button onclick="app.closeDataModal()" class="text-amber-500 hover:text-amber-700 font-bold text-sm">✖</button>
+    </div>
+
+    <p class="text-[11px] text-amber-800 text-left leading-relaxed">
+      進行状況を「じゅもん」としてコピーして残せます。
+    </p>
+
+    <div class="space-y-2 bg-amber-50 p-3 rounded-2xl border border-amber-200 text-left">
+      <label class="text-[10px] font-bold text-amber-700 block">▼ パン焼きのじゅもん</label>
+      <textarea id="save-code-textarea" readonly class="w-full h-16 p-2 text-[10px] font-mono border rounded-lg bg-white select-all resize-none focus:outline-none"></textarea>
+      <button onclick="app.copySaveCode()" class="w-full bg-[#7F5539] text-white text-xs py-2 rounded-xl font-bold btn-bounce shadow-sm">
+        📋 じゅもんをコピーする
+      </button>
+    </div>
+
+    <div class="space-y-2 bg-amber-100/50 p-3 rounded-2xl border border-amber-200 text-left">
+      <label class="text-[10px] font-bold text-amber-700 block">▼ じゅもんを入力して復元</label>
+      <input type="text" id="load-code-input" placeholder="ここにじゅもんを貼り付けてね" class="w-full p-2 text-[10px] font-mono border rounded-lg bg-white focus:outline-none">
+      <button onclick="app.loadSaveCode()" class="w-full bg-[#9C6644] text-white text-xs py-2 rounded-xl font-bold btn-bounce shadow-sm">
+        ✨ データを復活させる
+      </button>
+    </div>
+
+    <button onclick="app.closeDataModal()" class="text-xs text-amber-600 underline">とじる</button>
+  </div>
+</div>
+  <!-- こげぱんのSVGアセットライブラリ -->
+  <script>
+    const CharacterSVGs = {
+      // 1. 大正解
+      praise: `
+        <svg viewBox="0 0 200 200" class="w-full h-full">
+          <ellipse cx="100" cy="110" rx="75" ry="60" fill="#F4A261" stroke="#E76F51" stroke-width="6"/>
+          <ellipse cx="70" cy="80" rx="20" ry="8" fill="#FFF" opacity="0.6" transform="rotate(-15 70 80)"/>
+          <path d="M 60 110 Q 72 100 80 112" fill="none" stroke="#264653" stroke-width="6" stroke-linecap="round"/>
+          <path d="M 140 110 Q 128 100 120 112" fill="none" stroke="#264653" stroke-width="6" stroke-linecap="round"/>
+          <path d="M 90 125 Q 100 145 110 125" fill="#E76F51" stroke="#264653" stroke-width="4" stroke-linecap="round"/>
+          <circle cx="55" cy="120" r="10" fill="#E76F51" opacity="0.5"/>
+          <circle cx="145" cy="120" r="10" fill="#E76F51" opacity="0.5"/>
+          <path d="M 40 130 Q 20 110 15 120" fill="none" stroke="#E76F51" stroke-width="6" stroke-linecap="round"/>
+          <path d="M 160 130 Q 180 110 185 120" fill="none" stroke="#E76F51" stroke-width="6" stroke-linecap="round"/>
+          <path d="M 30 50 L 35 60 L 45 60 L 37 68 L 40 78 L 30 72 L 20 78 L 23 68 L 15 60 L 25 60 Z" fill="#F4D35E"/>
+          <path d="M 170 50 L 175 60 L 185 60 L 177 68 L 180 78 L 170 72 L 160 78 L 163 68 L 155 60 L 165 60 Z" fill="#F4D35E"/>
+        </svg>
+      `,
+      // 2. がっかり
+      disappoint: `
+        <svg viewBox="0 0 200 200" class="w-full h-full">
+          <ellipse cx="100" cy="110" rx="75" ry="60" fill="#4A3B32" stroke="#2E251F" stroke-width="6"/>
+          <ellipse cx="100" cy="75" rx="40" ry="15" fill="#1A1512" opacity="0.8"/>
+          <ellipse cx="70" cy="110" rx="12" ry="12" fill="#FFF"/>
+          <circle cx="70" cy="110" r="4" fill="#000"/>
+          <ellipse cx="130" cy="110" rx="12" ry="12" fill="#FFF"/>
+          <circle cx="130" cy="110" r="4" fill="#000"/>
+          <path d="M 90 135 Q 100 125 110 135" fill="none" stroke="#1A1512" stroke-width="5" stroke-linecap="round"/>
+          <path d="M 50 145 Q 45 165 40 155" fill="none" stroke="#2E251F" stroke-width="6" stroke-linecap="round"/>
+          <path d="M 150 145 Q 155 165 160 155" fill="none" stroke="#2E251F" stroke-width="6" stroke-linecap="round"/>
+          <path d="M 135 145 Q 150 150 160 140" fill="none" stroke="#888" stroke-width="3" stroke-linecap="round"/>
+          <text x="165" y="140" font-size="12" fill="#888" font-weight="bold">はぁ</text>
+        </svg>
+      `
+    };
+  </script>
+
+  <!-- アプリケーションロジック -->
+  <script>
+    // 中学1年生英単語100語
+    const WORD_DATABASE = [
+      { id: 1, word: "apple", meaning: "りんご", part: "名詞", hint: "aから始まる5文字のくだものだよ" },
+      { id: 2, word: "book", meaning: "本", part: "名詞", hint: "bから始まる4文字。読むものだよ" },
+      { id: 3, word: "cat", meaning: "猫", part: "名詞", hint: "cから始まる3文字。にゃーにゃー" },
+      { id: 4, word: "dog", meaning: "犬", part: "名詞", hint: "dから始まる3文字。わんわん" },
+      { id: 5, word: "desk", meaning: "机", part: "名詞", hint: "dから始まる4文字。勉強するときに使うよ" },
+      { id: 6, word: "pen", meaning: "ペン", part: "名詞", hint: "pから始まる3文字の筆記用具だよ" },
+      { id: 7, word: "student", meaning: "生徒・学生", part: "名詞", hint: "sから始まる7文字。学校で勉強する人だよ" },
+      { id: 8, word: "teacher", meaning: "先生・教師", part: "名詞", hint: "tから始まる7文字。学校で教えてくれる人だよ" },
+      { id: 9, word: "school", meaning: "学校", part: "名詞", hint: "sから始まる6文字。みんなが勉強に行く場所だよ" },
+      { id: 10, word: "friend", meaning: "友達", part: "名詞", hint: "fから始まる6文字。大切な仲間のことだよ" },
+      { id: 11, word: "run", meaning: "走る", part: "動詞", hint: "rから始まる3文字。いそいで足を動かすことだよ" },
+      { id: 12, word: "play", meaning: "遊ぶ、演奏する", part: "動詞", hint: "pから始まる4文字。スポーツや楽器をするときに使うよ" },
+      { id: 13, word: "study", meaning: "勉強する", part: "動詞", hint: "sから始まる5文字。毎日コツコツ知識を増やすことだよ" },
+      { id: 14, word: "speak", meaning: "話す", part: "動詞", hint: "sから始まる5文字。言葉を口から出すことだよ" },
+      { id: 15, word: "read", meaning: "読む", part: "動詞", hint: "rから始まる4文字。本や文字を目で追うことだよ" },
+      { id: 16, word: "write", meaning: "書く", part: "動詞", hint: "wから始まる5文字。えんぴつでノートに書くことだよ" },
+      { id: 17, word: "like", meaning: "〜が好き", part: "動詞", hint: "lから始まる4文字。お気に入りの気持ちだよ" },
+      { id: 18, word: "love", meaning: "〜を愛する、大好き", part: "動詞", hint: "lから始まる4文字。likeよりもっと強い大好きだよ" },
+      { id: 19, word: "happy", meaning: "幸せな、うれしい", part: "形容詞", hint: "hから始まる5文字。ハッピーな気持ちだよ" },
+      { id: 20, word: "sad", meaning: "悲しい", part: "形容詞", hint: "sから始まる3文字。こげぱんがいつも感じてる気持ちだよ" },
+      { id: 21, word: "big", meaning: "大きい", part: "形容詞", hint: "bから始まる3文字。サイズが巨大なことだよ" },
+      { id: 22, word: "small", meaning: "小さい", part: "形容詞", hint: "sから始まる5文字。ミニサイズのイメージだよ" },
+      { id: 23, word: "new", meaning: "新しい", part: "形容詞", hint: "nから始まる3文字。できたて、ぴかぴかなことだよ" },
+      { id: 24, word: "old", meaning: "古い、〜歳", part: "形容詞", hint: "oから始まる3文字。時間が経っていることだよ" },
+      { id: 25, word: "good", meaning: "良い、上手な", part: "形容詞", hint: "gから始まる4文字。グッドな出来栄えのことだよ" },
+      { id: 26, word: "beautiful", meaning: "美しい", part: "形容詞", hint: "bから始まる9文字。とってもきれいな様子だよ" },
+      { id: 27, word: "red", meaning: "赤", part: "名詞/形容詞", hint: "rから始まる3文字。トマトやいちごの色だよ" },
+      { id: 28, word: "blue", meaning: "青", part: "名詞/形容詞", hint: "bから始まる4文字. 澄みきった空や海の色だよ" },
+      { id: 29, word: "white", meaning: "白", part: "名詞/形容詞", hint: "wから始まる5文字。まっしろな牛乳の色だよ" },
+      { id: 30, word: "black", meaning: "黒", part: "名詞/形容詞", hint: "bから始まる5文字。こげぱんが焦げすぎたときの色だよ" },
+      { id: 31, word: "milk", meaning: "牛乳、ミルク", part: "名詞", hint: "mから始まる4文字。こげぱんがやさぐれて飲むドリンクだよ" },
+      { id: 32, word: "bread", meaning: "パン", part: "名詞", hint: "bから始まる5文字。ベーカリーの主役だよ" },
+      { id: 33, word: "water", meaning: "水", part: "名詞", hint: "wから始まる5文字。毎日飲む透明な水分だよ" },
+      { id: 34, word: "family", meaning: "家族", part: "名詞", hint: "fから始まる 6文字。お家で一緒にくらす人たちだよ" },
+      { id: 35, word: "father", meaning: "お父さん、父", part: "名詞", hint: "fから始まる6文字。パパのことだよ" },
+      { id: 36, word: "mother", meaning: "お母さん、母", part: "名詞", hint: "mから始まる6文字。ママのことだよ" },
+      { id: 37, word: "brother", meaning: "兄、弟、兄弟", part: "名詞", hint: "bから始まる7文字。男のきょうだいだよ" },
+      { id: 38, word: "sister", meaning: "姉、妹、姉妹", part: "名詞", hint: "sから始まる6文字。女のきょうだいだよ" },
+      { id: 39, word: "house", meaning: "家", part: "名詞", hint: "hから始まる5文字。みんなが帰るおうちだよ" },
+      { id: 40, word: "room", meaning: "部屋", part: "名詞", hint: "rから始まる4文字。おうちの中の自分スペースだよ" },
+      { id: 41, word: "morning", meaning: "朝", part: "名詞", hint: "mから始まる7文字。おはよう！の時間だよ" },
+      { id: 42, word: "afternoon", meaning: "午後、昼", part: "名詞", hint: "aから始まる9文字。こんにちは！の時間だよ" },
+      { id: 43, word: "night", meaning: "夜", part: "名詞", hint: "nから始まる5文字。おやすみなさい...の時間だよ" },
+      { id: 44, word: "today", meaning: "今日", part: "名詞/副詞", hint: "tから始まる5文字。いま現在の日のことだよ" },
+      { id: 45, word: "yesterday", meaning: "昨日", part: "名詞/副詞", hint: "yから始まる9文字。一日前の日のことだよ" },
+      { id: 46, word: "tomorrow", meaning: "明日", part: "名詞/副詞", hint: "tから始まる8文字。あしたの日のことだよ" },
+      { id: 47, word: "spring", meaning: "春", part: "名詞", hint: "sから始まる6文字。さくらがさく季節だよ" },
+      { id: 48, word: "summer", meaning: "夏", part: "名詞", hint: "sから始まる6文字。プールや花火の季節だよ" },
+      { id: 49, word: "autumn", meaning: "秋", part: "名詞", hint: "aから始まる6文字。紅葉やおいしいくだものの季節だよ" },
+      { id: 50, word: "winter", meaning: "冬", part: "名詞", hint: "wから始まる6文字。雪がふってさむい季節だよ" },
+      { id: 51, word: "sunday", meaning: "日曜日", part: "名詞", hint: "sから始まる6文字。お休みの日だよ" },
+      { id: 52, word: "monday", meaning: "月曜日", part: "名詞", hint: "mから始まる6文字。一週間のはじまりだよ" },
+      { id: 53, word: "tuesday", meaning: "火曜日", part: "名詞", hint: "tから始まる7文字。火曜日のことだよ" },
+      { id: 54, word: "wednesday", meaning: "水曜日", part: "名詞", hint: "wから始まる9文字。水曜日のことだよ" },
+      { id: 55, word: "thursday", meaning: "木曜日", part: "名詞", hint: "tから始まる8文字。木曜日のことだよ" },
+      { id: 56, word: "friday", meaning: "金曜日", part: "名詞", hint: "fから始まる6文字。もうすぐお休みでワクワクする日だよ" },
+      { id: 57, fill: "saturday", word: "saturday", meaning: "土曜日", part: "名詞", hint: "sから始まる8文字。週末の土曜日だよ" },
+      { id: 58, word: "one", meaning: "1、一つ", part: "代名詞/形容詞", hint: "oから始まる3文字。数字の『いち』だよ" },
+      { id: 59, word: "two", meaning: "2、二つ", part: "代名詞/形容詞", hint: "tから始まる3文字。数字の『に』だよ" },
+      { id: 60, word: "three", meaning: "3、三つ", part: "代名詞/形容詞", hint: "tから始まる5文字。数字の『さん』だよ" },
+      { id: 61, word: "english", meaning: "英語、イギリスの", part: "名詞/形容詞", hint: "eから始まる7文字。いま勉強している言葉のことだよ" },
+      { id: 62, word: "japanese", meaning: "日本語、日本の、日本人", part: "名詞/形容詞", hint: "jから始まる8文字。私たちがいつも使っている言葉だよ" },
+      { id: 63, word: "welcome", meaning: "歓迎する、ようこそ", part: "動詞/間投詞", hint: "wから始まる7文字。ようこそ！と迎えるときの言葉だよ" },
+      { id: 64, word: "thank", meaning: "感謝する、ありがとう", part: "動詞", hint: "tから始まる5文字。ありがとう！って伝える言葉だよ" },
+      { id: 65, word: "please", meaning: "どうぞ、おねがいします", part: "副詞", hint: "pから始まる6文字。丁寧にお願いするときの魔法の言葉だよ" },
+      { id: 66, word: "name", meaning: "名前", part: "名詞", hint: "nから始まる4文字。名前（なまえ）のことだよ" },
+      { id: 67, word: "game", meaning: "ゲーム、試合", part: "名詞", hint: "gから始まる4文字。テレビゲームなどのことだよ" },
+      { id: 68, word: "music", meaning: "音楽", part: "名詞", hint: "mから始まる5文字。歌ったり奏でたりするものだよ" },
+      { id: 69, word: "song", meaning: "歌", part: "名詞", hint: "sから始まる4文字。声にのせて歌うメロディーだよ" },
+      { id: 70, word: "sport", meaning: "スポーツ、運動", part: "名詞", hint: "sから始まる5文字。運動（うんどう）のことだよ" },
+      { id: 71, word: "soccer", meaning: "サッカー", part: "名詞", hint: "sから始まる6文字。ボールを蹴ってゴールに入れるスポーツだよ" },
+      { id: 72, word: "tennis", meaning: "テニス", part: "名詞", hint: "tから始まる6文字。ラケットで打ち合うスポーツだよ" },
+      { id: 73, word: "piano", meaning: "ピアノ", part: "名詞", hint: "pから始まる5文字。鍵盤を叩いて音を出す楽器だよ" },
+      { id: 74, word: "guitar", meaning: "ギター", part: "名詞", hint: "gから始まる6文字。弦をはじいてならす楽器だよ" },
+      { id: 75, word: "camera", meaning: "カメラ", part: "名詞", hint: "cから始まる6文字。写真をパシャリと撮る機械だよ" },
+      { id: 76, word: "station", meaning: "駅", part: "名詞", hint: "sから始まる7文字。電車が止まるところだよ" },
+      { id: 77, word: "train", meaning: "電車、列車", part: "名詞", hint: "tから始まる5文字。線路を走るのりものだよ" },
+      { id: 78, word: "bus", meaning: "バス", part: "名詞", hint: "bから始まる3文字。道路を走る大きなのりものだよ" },
+      { id: 79, word: "car", meaning: "車、乗用車", part: "名詞", hint: "cから始まる3文字。くるま（自動車）のことだよ" },
+      { id: 80, word: "bike", meaning: "自転車、バイク", part: "名詞", hint: "bから始まる4文字。ペダルをこいで進む二輪車だよ" },
+      { id: 81, word: "look", meaning: "見る、〜のように見える", part: "動詞", hint: "lから始まる4文字。視線をそこに向けることだよ" },
+      { id: 82, word: "listen", meaning: "（耳を澄まして）聴く", part: "動詞", hint: "lから始まる6文字。音楽などを集中してきくことだよ" },
+      { id: 83, word: "hear", meaning: "聞こえる", part: "動詞", hint: "hから始まる4文字。自然と音が耳に入ってくることだよ" },
+      { id: 84, word: "eat", meaning: "食べる", part: "動詞", hint: "eから始まる3文字。おいしいものを口にするよ" },
+      { id: 85, word: "drink", meaning: "飲む", part: "動詞", hint: "dから始まる5文字。水分をゴクゴクすることだよ" },
+      { id: 86, word: "make", meaning: "作る", part: "動詞", hint: "mから始まる4文字。おいしいパンをこねてつくるよ" },
+      { id: 87, word: "cook", meaning: "料理する", part: "動詞", hint: "cから始まる4文字。キッチンでご飯を用意することだよ" },
+      { id: 88, word: "buy", meaning: "買う", part: "動詞", hint: "bから始まる3文字。お店でお買い物することだよ" },
+      { id: 89, word: "sell", meaning: "売る", part: "動詞", hint: "sから始まる4文字。お店の人が品物をお客さんに手渡すことだよ" },
+      { id: 90, word: "have", meaning: "持っている、飼う", part: "動詞", hint: "hから始まる4文字。自分の手元に持っていることだよ" },
+      { id: 91, word: "want", meaning: "〜が欲しい", part: "動詞", hint: "wから始まる4文字。これが欲しい！と思うことだよ" },
+      { id: 92, word: "help", meaning: "手伝う、助ける", part: "動詞", hint: "hから始まる4文字。困っている人をサポートするよ" },
+      { id: 93, word: "clean", meaning: "きれいにする、掃除する", part: "動詞/形容詞", hint: "cから始まる5文字。ぴかぴかに掃除することだよ" },
+      { id: 94, word: "open", meaning: "開ける、開く", part: "動詞/形容詞", hint: "oから始まる4文字。ドアや窓をあけることだよ" },
+      { id: 95, word: "close", meaning: "閉める、閉じる", part: "動詞", hint: "cから始まる5文字。扉をパタンと閉じることだよ" },
+      { id: 96, word: "window", meaning: "窓", part: "名詞", hint: "wから始まる6文字。光が入るまどのことだよ" },
+      { id: 97, word: "door", meaning: "ドア、扉", part: "名詞", hint: "dから始まる4文字。部屋の入り口にあるとびらだよ" },
+      { id: 98, word: "bag", meaning: "カバン、バッグ", part: "名詞", hint: "bから始まる3文字。荷物をいれるかばんだよ" },
+      { id: 99, word: "cap", meaning: "（ふちのある）帽子", part: "名詞", hint: "cから始まる3文字。日よけに頭にかぶるものだよ" },
+      { id: 100, word: "cup", meaning: "カップ、コップ", part: "名詞", hint: "cから始まる3文字。温かい飲み物をいれる器だよ" }
+    ];
+
+   class KogePanEnglishApp {
+  constructor() {
+    this.words = [];
+    this.currentRoundWords = [];
+    this.currentQuestionIndex = 0;
+    this.currentWord = null;
+    this.currentStage = 1;
+    this.score = 0;
+    this.roundLogs = [];
+
+    this.init();
+  }
+
+  init() {
+    const ua = navigator.userAgent.toLowerCase();
+    if (
+      ua.indexOf("line") > -1 ||
+      ua.indexOf("fban") > -1 ||
+      ua.indexOf("fbav") > -1 ||
+      ua.indexOf("ybrowser") > -1
+    ) {
+      const warnEl = document.getElementById("browser-warning");
+      if (warnEl) warnEl.classList.remove("hidden");
+    }
+
+    const savedDataV3 = localStorage.getItem("kogepan_vocab_progress_v3");
+    const savedDataV2 = localStorage.getItem("kogepan_vocab_progress_v2");
+
+    if (savedDataV3 || savedDataV2) {
+      try {
+        this.words = JSON.parse(savedDataV3 || savedDataV2);
+        this.mergeDatabase();
+      } catch (e) {
+        this.resetToDefault();
+      }
+    } else {
+      this.resetToDefault();
+    }
+
+    this.updateTotalProgressDisplay();
+    this.showStartScreen();
+  }
+
+  resetToDefault() {
+    this.words = WORD_DATABASE.map(w => ({
+      ...w,
+      s1Correct: 0,
+      s2Correct: 0,
+      s3Correct: 0,
+      s1Streak: 0,
+      s2Streak: 0,
+      s3Streak: 0,
+      wrongCount: 0,
+      lastAnsweredAt: 0,
+      unlockedStage: 1
+    }));
+
+    this.saveData();
+  }
+
+  mergeDatabase() {
+    const merged = WORD_DATABASE.map(w => {
+      const existing = this.words.find(ex => ex.id === w.id);
+
+      if (existing) {
+        const s1Correct = existing.s1Correct || 0;
+        const s2Correct = existing.s2Correct || 0;
+        const s3Correct = existing.s3Correct || 0;
+
+        let unlockedStage = existing.unlockedStage || 1;
+        if (s1Correct >= 2) unlockedStage = 2;
+        if (s2Correct >= 2) unlockedStage = 3;
+
+        return {
+          ...w,
+          s1Correct,
+          s2Correct,
+          s3Correct,
+          s1Streak: existing.s1Streak || 0,
+          s2Streak: existing.s2Streak || 0,
+          s3Streak: existing.s3Streak || 0,
+          wrongCount: existing.wrongCount || 0,
+          lastAnsweredAt: existing.lastAnsweredAt || 0,
+          unlockedStage
+        };
+      }
+
+      return {
+        ...w,
+        s1Correct: 0,
+        s2Correct: 0,
+        s3Correct: 0,
+        s1Streak: 0,
+        s2Streak: 0,
+        s3Streak: 0,
+        wrongCount: 0,
+        lastAnsweredAt: 0,
+        unlockedStage: 1
+      };
+    });
+
+    this.words = merged;
+    this.saveData();
+  }
+
+  saveData() {
+    localStorage.setItem("kogepan_vocab_progress_v3", JSON.stringify(this.words));
+  }
+
+  generateSaveCode() {
+    const compactData = this.words.map(w => [
+      w.id,
+      w.s1Correct || 0,
+      w.s2Correct || 0,
+      w.s3Correct || 0,
+      w.s1Streak || 0,
+      w.s2Streak || 0,
+      w.s3Streak || 0,
+      w.wrongCount || 0,
+      w.lastAnsweredAt || 0
+    ]);
+
+    try {
+      return btoa(JSON.stringify(compactData));
+    } catch (e) {
+      return "";
+    }
+  }
+
+  loadFromSaveCode(code) {
+    try {
+      const decodedStr = atob(code.trim());
+      const compactData = JSON.parse(decodedStr);
+
+      if (!Array.isArray(compactData)) return false;
+
+      this.words.forEach(w => {
+        const found = compactData.find(item => item[0] === w.id);
+
+        if (found) {
+          w.s1Correct = found[1] || 0;
+          w.s2Correct = found[2] || 0;
+          w.s3Correct = found[3] || 0;
+          w.s1Streak = found[4] || 0;
+          w.s2Streak = found[5] || 0;
+          w.s3Streak = found[6] || 0;
+          w.wrongCount = found[7] || 0;
+          w.lastAnsweredAt = found[8] || 0;
+
+          if (w.s2Correct >= 2) {
+            w.unlockedStage = 3;
+          } else if (w.s1Correct >= 2) {
+            w.unlockedStage = 2;
+          } else {
+            w.unlockedStage = 1;
+          }
+        }
+      });
+
+      this.saveData();
+      this.updateTotalProgressDisplay();
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  showDataModal() {
+    const code = this.generateSaveCode();
+    document.getElementById("save-code-textarea").value = code;
+    document.getElementById("load-code-input").value = "";
+    document.getElementById("data-management-modal").classList.remove("hidden");
+  }
+
+  closeDataModal() {
+    document.getElementById("data-management-modal").classList.add("hidden");
+  }
+
+  copySaveCode() {
+    const textarea = document.getElementById("save-code-textarea");
+    textarea.select();
+    textarea.setSelectionRange(0, 99999);
+
+    try {
+      document.execCommand("copy");
+      this.showToast("📋 じゅもんをコピーしたよ！メモ帳などに貼ってね。");
+    } catch (err) {
+      this.showToast("コピーが失敗しました。上のテキストを長押ししてコピーしてね");
+    }
+  }
+
+  loadSaveCode() {
+    const inputVal = document.getElementById("load-code-input").value;
+
+    if (!inputVal) {
+      this.showToast("復活のじゅもんを入力してね！");
+      return;
+    }
+
+    const success = this.loadFromSaveCode(inputVal);
+
+    if (success) {
+      this.showToast("✨ おめでとう！データを無事に復活させたよ！");
+      this.closeDataModal();
+      this.showStartScreen();
+    } else {
+      this.showToast("❌ じゅもんが間違っているみたい。もう一度確認してね");
+    }
+  }
+
+  confirmReset() {
+    document.getElementById("custom-confirm-modal").classList.remove("hidden");
+  }
+
+  closeResetModal() {
+    document.getElementById("custom-confirm-modal").classList.add("hidden");
+  }
+
+  executeReset() {
+    this.closeResetModal();
+    this.resetToDefault();
+    this.updateTotalProgressDisplay();
+    this.showStartScreen();
+    this.showToast("パンの記録をすべてリセットしたよ…どうせまた焦げるけど…");
+  }
+
+  updateTotalProgressDisplay() {
+    const totalWords = this.words.length;
+    const clearedWords = this.words.filter(w => w.s3Correct >= 3).length;
+    const percent = Math.floor((clearedWords / totalWords) * 100);
+
+    const bar = document.getElementById("total-progress-bar");
+    const text = document.getElementById("total-progress-text");
+
+    if (bar && text) {
+      bar.style.width = `${percent}%`;
+      text.innerHTML = `極上のきれいぱん： <b>${clearedWords}</b> / ${totalWords} 語 (${percent}%)`;
+    }
+
+    const footerStatus = document.getElementById("footer-character-status");
+
+    if (footerStatus) {
+      if (percent === 0) {
+        footerStatus.innerText = "こげぱん「まだ1個もきれいに焼けてないね…僕と同じだ…💤」";
+      } else if (percent < 35) {
+        footerStatus.innerText = "こげぱん「ちょっときれいなパンが増えたよ。どうせ僕はこげてるし…🫗」";
+      } else if (percent < 70) {
+        footerStatus.innerText = "こげぱん「半分くらいきれいに焼けてる！君ってパン作りの才能あるよ🥐」";
+      } else if (percent < 100) {
+        footerStatus.innerText = "こげぱん「あと少しですべてきれいぱん！僕もきれいに焼き直して…🥖」";
+      } else {
+        footerStatus.innerText = "こげぱん「全クリア！？君は伝説の超一流パン職人だよ！✨🏆✨」";
+      }
+    }
+  }  hideAllScreens() {
+    document.getElementById("screen-start").classList.add("hidden");
+    document.getElementById("screen-quiz").classList.add("hidden");
+    document.getElementById("screen-feedback").classList.add("hidden");
+    document.getElementById("screen-result").classList.add("hidden");
+    document.getElementById("screen-wordlist").classList.add("hidden");
+  }
+
+  showStartScreen() {
+    this.hideAllScreens();
+    this.updateTotalProgressDisplay();
+    document.getElementById("screen-start").classList.remove("hidden");
+  }
+
+  startRound() {
+    let availableWords = this.words.filter(w => (w.s3Correct || 0) < 3);
+
+    if (availableWords.length === 0) {
+      availableWords = [...this.words];
+      this.showToast("全クリア中だから、すべての単語からランダムに復習するよ！");
+    }
+
+    const weightedWords = availableWords.map(w => {
+      let weight = 1;
+
+      weight += (w.wrongCount || 0) * 4;
+
+      if ((w.s1Correct || 0) < 2) weight += 3;
+      if ((w.s1Correct || 0) >= 2 && (w.s2Correct || 0) < 2) weight += 4;
+      if ((w.s2Correct || 0) >= 2 && (w.s3Correct || 0) < 3) weight += 6;
+
+      const daysPassed = w.lastAnsweredAt
+        ? (Date.now() - w.lastAnsweredAt) / (1000 * 60 * 60 * 24)
+        : 7;
+
+      if (daysPassed >= 7) weight += 4;
+      else if (daysPassed >= 3) weight += 2;
+      else if (daysPassed >= 1) weight += 1;
+
+      return { word: w, weight };
+    });
+
+    this.currentRoundWords = this.pickWeightedWords(weightedWords, 10);
+    this.currentQuestionIndex = 0;
+    this.score = 0;
+    this.roundLogs = [];
+
+    this.hideAllScreens();
+    document.getElementById("screen-quiz").classList.remove("hidden");
+
+    this.loadQuestion();
+  }
+
+  pickWeightedWords(weightedWords, count) {
+    const selected = [];
+    const pool = [...weightedWords];
+
+    while (selected.length < count && pool.length > 0) {
+      const totalWeight = pool.reduce((sum, item) => sum + item.weight, 0);
+      let random = Math.random() * totalWeight;
+      let pickedIndex = 0;
+
+      for (let i = 0; i < pool.length; i++) {
+        random -= pool[i].weight;
+        if (random <= 0) {
+          pickedIndex = i;
+          break;
+        }
+      }
+
+      selected.push(pool[pickedIndex].word);
+      pool.splice(pickedIndex, 1);
+    }
+
+    return selected;
+  }
+
+  loadQuestion() {
+    this.currentWord = this.currentRoundWords[this.currentQuestionIndex];
+
+    if ((this.currentWord.s1Correct || 0) < 2) {
+      this.currentStage = 1;
+    } else if ((this.currentWord.s2Correct || 0) < 2) {
+      this.currentStage = 2;
+    } else {
+      this.currentStage = 3;
+    }
+
+    document.getElementById("quiz-question-number").innerText =
+      `第 ${this.currentQuestionIndex + 1} / ${this.currentRoundWords.length} 問`;
+
+    document.getElementById("quiz-part-of-speech").innerText =
+      `【${this.currentWord.part}】`;
+
+    const stageTitle = document.getElementById("quiz-current-stage");
+    const starContainer = document.getElementById("star-container");
+    const promptEl = document.getElementById("quiz-question-prompt");
+    const hintEl = document.getElementById("quiz-hint");
+    const choicesArea = document.getElementById("quiz-choices");
+    const inputArea = document.getElementById("quiz-input-area");
+    const typedAnswer = document.getElementById("quiz-typed-answer");
+
+    starContainer.innerHTML = "";
+    this.drawStars(starContainer);
+
+    hintEl.classList.add("hidden");
+    choicesArea.classList.add("hidden");
+    inputArea.classList.add("hidden");
+    typedAnswer.value = "";
+
+    if (this.currentStage === 1) {
+      stageTitle.innerText = "ステージ 1：日本語 ➔ 英語 (4択)";
+      promptEl.innerText = this.currentWord.meaning;
+      choicesArea.classList.remove("hidden");
+      this.generateChoices(true);
+    } else if (this.currentStage === 2) {
+      stageTitle.innerText = "ステージ 2：英語 ➔ 日本語 (4択)";
+      promptEl.innerText = this.currentWord.word;
+      choicesArea.classList.remove("hidden");
+      this.generateChoices(false);
+    } else {
+      stageTitle.innerText = "ステージ 3：スペル入力 (記述式)";
+      promptEl.innerText = this.currentWord.meaning;
+      hintEl.innerText = `💡 ヒント: ${this.currentWord.hint}`;
+      hintEl.classList.remove("hidden");
+      inputArea.classList.remove("hidden");
+      setTimeout(() => typedAnswer.focus(), 250);
+    }
+  }
+
+  drawStars(container) {
+    const s1 = this.currentWord.s1Correct || 0;
+    const s2 = this.currentWord.s2Correct || 0;
+    const s3 = this.currentWord.s3Correct || 0;
+    const st1 = this.currentWord.s1Streak || 0;
+    const st2 = this.currentWord.s2Streak || 0;
+    const st3 = this.currentWord.s3Streak || 0;
+
+    let statusText = "";
+    let color = "";
+
+    if (s3 >= 3) {
+      statusText = "✨ 極上のきれいぱん！";
+      color = "text-amber-600";
+    } else if (s2 >= 2) {
+      statusText = `🥖 スペル修行中 S3連続${st3}/3`;
+      color = "text-orange-500";
+    } else if (s1 >= 2) {
+      statusText = `🥚 意味確認中 S2連続${st2}/2`;
+      color = "text-yellow-600";
+    } else {
+      statusText = `💀 タネ焼き中 S1連続${st1}/2`;
+      color = "text-stone-500";
+    }
+
+    const infoSpan = document.createElement("span");
+    infoSpan.className = `font-bold ${color}`;
+    infoSpan.innerText = statusText;
+    container.appendChild(infoSpan);
+  }
+
+  generateChoices(isEnglishTarget) {
+    const choicesArea = document.getElementById("quiz-choices");
+    choicesArea.innerHTML = "";
+
+    const correctValue = isEnglishTarget
+      ? this.currentWord.word
+      : this.currentWord.meaning;
+
+    let distractors = this.words
+      .filter(w => w.id !== this.currentWord.id)
+      .filter(w => w.part === this.currentWord.part || Math.random() > 0.4)
+      .map(w => isEnglishTarget ? w.word : w.meaning);
+
+    distractors = [...new Set(distractors)]
+      .sort(() => 0.5 - Math.random())
+      .slice(0, 3);
+
+    while (distractors.length < 3) {
+      distractors.push(isEnglishTarget ? "bread" : "パン");
+    }
+
+    const allChoices = [correctValue, ...distractors]
+      .sort(() => 0.5 - Math.random());
+
+    allChoices.forEach((choice, idx) => {
+      const btn = document.createElement("button");
+
+      btn.className =
+        "w-full text-left p-4 bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-2xl text-base font-bold text-amber-950 btn-bounce flex justify-between items-center shadow-sm";
+
+      btn.innerHTML = `
+        <span>${idx + 1}. <span class="${isEnglishTarget ? "font-mono" : ""}">${choice}</span></span>
+        <span class="text-xs bg-amber-200 px-2 py-0.5 rounded-md text-amber-800">えらぶ</span>
+      `;
+
+      btn.onclick = () => this.checkMultipleChoiceAnswer(choice, correctValue);
+      choicesArea.appendChild(btn);
+    });
+  }  checkMultipleChoiceAnswer(selected, correct) {
+    const isCorrect = selected === correct;
+    this.processAnswerResult(isCorrect, selected);
+  }
+
+  submitTypedAnswer() {
+    const inputEl = document.getElementById("quiz-typed-answer");
+    const userAnswer = inputEl.value.trim().toLowerCase();
+    const correctAnswer = this.currentWord.word.toLowerCase();
+
+    const isCorrect = userAnswer === correctAnswer;
+    this.processAnswerResult(isCorrect, userAnswer);
+  }
+
+  processAnswerResult(isCorrect, userAnswerText) {
+    const word = this.currentWord;
+    let isStageUp = false;
+    let isStageDown = false;
+
+    word.lastAnsweredAt = Date.now();
+
+    if (isCorrect) {
+      this.score++;
+
+      if (this.currentStage === 1) {
+        word.s1Correct = (word.s1Correct || 0) + 1;
+        word.s1Streak = (word.s1Streak || 0) + 1;
+        word.wrongCount = Math.max(0, (word.wrongCount || 0) - 1);
+
+        if (word.s1Streak >= 2) {
+          word.unlockedStage = 2;
+          isStageUp = true;
+        }
+      }
+
+      if (this.currentStage === 2) {
+        word.s2Correct = (word.s2Correct || 0) + 1;
+        word.s2Streak = (word.s2Streak || 0) + 1;
+        word.wrongCount = Math.max(0, (word.wrongCount || 0) - 1);
+
+        if (word.s2Streak >= 2) {
+          word.unlockedStage = 3;
+          isStageUp = true;
+        }
+      }
+
+      if (this.currentStage === 3) {
+        word.s3Correct = (word.s3Correct || 0) + 1;
+        word.s3Streak = (word.s3Streak || 0) + 1;
+        word.wrongCount = Math.max(0, (word.wrongCount || 0) - 1);
+
+        if (word.s3Streak >= 3) {
+          isStageUp = true;
+        }
+      }
+    } else {
+      word.wrongCount = (word.wrongCount || 0) + 1;
+
+      if (this.currentStage === 1) {
+        word.s1Streak = 0;
+      }
+
+      if (this.currentStage === 2) {
+        word.s2Streak = 0;
+        word.unlockedStage = 1;
+        isStageDown = true;
+      }
+
+      if (this.currentStage === 3) {
+        word.s3Streak = 0;
+        word.unlockedStage = 2;
+        isStageDown = true;
+      }
+    }
+
+    this.saveData();
+
+    this.roundLogs.push({
+      word: word.word,
+      meaning: word.meaning,
+      stage: this.currentStage,
+      isCorrect,
+      userAnswer: userAnswerText,
+      isStageUp,
+      isStageDown
+    });
+
+    this.showFeedback(isCorrect, isStageUp, userAnswerText, isStageDown);
+  }
+
+  analyzeSpelling(userAnswer, correctWord) {
+    const answer = (userAnswer || "").toLowerCase();
+    const correct = correctWord.toLowerCase();
+
+    if (!answer) {
+      return `この単語は <b>${correct.length}文字</b> だよ。まずは最初の文字「<b>${correct.charAt(0)}</b>」から思い出してみよう。`;
+    }
+
+    let firstDiff = -1;
+
+    for (let i = 0; i < Math.max(answer.length, correct.length); i++) {
+      if (answer[i] !== correct[i]) {
+        firstDiff = i;
+        break;
+      }
+    }
+
+    if (firstDiff === -1) {
+      return "スペルは合っているみたい。大文字・小文字や空白を確認してみてね。";
+    }
+
+    const before = correct.slice(0, firstDiff);
+    const correctChar = correct[firstDiff] || "なし";
+    const answerChar = answer[firstDiff] || "なし";
+
+    return `ここが焦げポイントだよ🍞
+
+途中までは「<b>${before || "最初"}</b>」まで確認できたよ。
+
+${firstDiff + 1}文字目は、
+君の答え：<b>${answerChar}</b>
+正解：<b>${correctChar}</b>
+
+正しいスペルは <b>${correct}</b> だよ。`;
+  }
+
+  showFeedback(isCorrect, isStageUp, userAnswerText, isStageDown = false) {
+    this.hideAllScreens();
+
+    const screen = document.getElementById("screen-feedback");
+    screen.classList.remove("hidden");
+
+    const charContainer = document.getElementById("feedback-character-container");
+    const banner = document.getElementById("feedback-result-banner");
+    const wordTitle = document.getElementById("feedback-word-title");
+    const wordMeaning = document.getElementById("feedback-word-meaning");
+    const feedbackText = document.getElementById("feedback-text");
+
+    wordTitle.innerText = this.currentWord.word;
+    wordMeaning.innerText = `意味：${this.currentWord.meaning}`;
+
+    if (isCorrect) {
+      charContainer.innerHTML = CharacterSVGs.praise;
+
+      banner.innerHTML = `
+        <p class="text-amber-500 text-xs font-bold uppercase tracking-wider">CORRECT!</p>
+        <h3 class="text-3xl font-extrabold text-green-700 font-magic animate-bounce">✨ 大正解！ ✨</h3>
+      `;
+
+      const praiseMessages = [
+        "「いい焼き加減だよ！この単語、ちょっとずつ頭に残ってきてるね🍞」",
+        "「正解！今の一問で、パン生地がふくらんだ気がするよ🥖」",
+        "「やったね。焦げずにきれいに焼けたよ。次もこの調子でいこう✨」",
+        "「すごい、ちゃんと覚えてたね。こげぱんも少し自信が出てきたよ…！」"
+      ];
+
+      if (isStageUp) {
+        if (this.currentStage === 1) {
+          feedbackText.innerHTML =
+            "🌟 <b>ステージ1クリア！</b>\n\n日本語を見て英語を選べるようになってきたよ。次は、英語を見て日本語の意味を確認するステージ2に進むよ。";
+        } else if (this.currentStage === 2) {
+          feedbackText.innerHTML =
+            "🌟🌟 <b>ステージ2クリア！</b>\n\n意味の確認はかなり安定してきたよ。次はいよいよ、英語のスペルを自分で書くステージ3だよ。";
+        } else {
+          feedbackText.innerHTML =
+            "🌟🌟🌟 <b>完全クリア！極上のきれいぱん完成！</b>\n\nスペルまで3回連続で正解できたよ。この単語はかなり定着してきたね🍞✨";
+        }
+      } else {
+        feedbackText.innerText =
+          praiseMessages[Math.floor(Math.random() * praiseMessages.length)];
+      }
+    } else {
+      charContainer.innerHTML = CharacterSVGs.disappoint;
+
+      banner.innerHTML = `
+        <p class="text-amber-600 text-xs font-bold uppercase tracking-wider">DON'T MIND</p>
+        <h3 class="text-2xl font-bold text-amber-800 font-magic">焼き直そう 🍞</h3>
+      `;
+
+      const correctWord = this.currentWord.word;
+      const correctMeaning = this.currentWord.meaning;
+
+      if (this.currentStage === 1) {
+        feedbackText.innerHTML =
+          `「惜しかったね。\n\n『${correctMeaning}』を英語にすると、正解は <b>${correctWord}</b> だよ。\n\nまずは日本語を見て英語を選べるところから、もう一度焼き直そう。」`;
+      } else if (this.currentStage === 2) {
+        feedbackText.innerHTML =
+          `「ここで一度タネに戻して固め直そう。\n\n英単語 <b>${correctWord}</b> の意味は <b>${correctMeaning}</b> だよ。\n\n次に出たら、まず形と意味をつなげよう。」`;
+      } else {
+        const userDisplay =
+          userAnswerText === "" ? "（なにも書いてないよ）" : userAnswerText;
+
+        const diffAnalysis = this.analyzeSpelling(userAnswerText, correctWord);
+
+        feedbackText.innerHTML =
+          `「スペルは難しいところだよ。今回は半焼きに戻して、もう一度意味から固めよう。\n\n君の答え：<b>${userDisplay}</b>\n\n${diffAnalysis}\n\n『${correctMeaning}』の正しいスペルは <b>${correctWord}</b> だよ。」`;
+      }
+    }
+  }  nextQuestion() {
+    this.currentQuestionIndex++;
+
+    if (this.currentQuestionIndex < this.currentRoundWords.length) {
+      this.hideAllScreens();
+      document.getElementById("screen-quiz").classList.remove("hidden");
+      this.loadQuestion();
+    } else {
+      this.showResultScreen();
+    }
+  }
+
+  showResultScreen() {
+    this.hideAllScreens();
+
+    const screen = document.getElementById("screen-result");
+    screen.classList.remove("hidden");
+
+    document.getElementById(
+      "result-score-text"
+    ).innerHTML =
+      `10問中 <span class="text-2xl text-green-700 font-bold">${this.score}問</span> 大正解！`;
+
+    const commentEl = document.getElementById("result-summary-comment");
+
+    if (this.score === 10) {
+      commentEl.innerText =
+        "こげぱん「全問正解！？これはもう職人級の焼き上がりだよ…！」";
+    } else if (this.score >= 7) {
+      commentEl.innerText =
+        "こげぱん「かなりいい感じ！ちゃんと焼けてきてるよ🥖」";
+    } else if (this.score >= 4) {
+      commentEl.innerText =
+        "こげぱん「半分くらい焼けたね。まだ伸びるよ🍞」";
+    } else {
+      commentEl.innerText =
+        "こげぱん「今日はちょっと焦げ気味。でも焼き直せばいいんだ。」";
+    }
+
+    const listEl = document.getElementById("result-words-list");
+    listEl.innerHTML = "";
+
+    this.roundLogs.forEach(log => {
+      const item = document.createElement("div");
+
+      item.className =
+        `p-3 rounded-xl border flex justify-between items-center text-xs ${
+          log.isCorrect
+            ? "bg-green-50 border-green-200"
+            : "bg-red-50 border-red-200"
+        }`;
+
+      let stageLabel = "";
+
+      if (log.stage === 1) stageLabel = "S1";
+      if (log.stage === 2) stageLabel = "S2";
+      if (log.stage === 3) stageLabel = "S3";
+
+      item.innerHTML = `
+        <div>
+          <span class="font-bold font-mono text-sm">${log.word}</span>
+          <span class="text-amber-700 ml-1">(${log.meaning})</span>
+          <div class="text-[10px] text-amber-500 mt-0.5">${stageLabel}</div>
+        </div>
+        <div class="text-right">
+          <span class="font-bold ${
+            log.isCorrect ? "text-green-600" : "text-red-500"
+          }">
+            ${log.isCorrect ? "○ 正解" : "× 不正解"}
+          </span>
+          ${
+            log.isStageUp
+              ? '<div class="text-[10px] text-orange-500 font-bold">★UP!</div>'
+              : ""
+          }
+          ${
+            log.isStageDown
+              ? '<div class="text-[10px] text-blue-500 font-bold">↩戻る</div>'
+              : ""
+          }
+        </div>
+      `;
+
+      listEl.appendChild(item);
+    });
+  }
+
+  showWordList() {
+    this.hideAllScreens();
+    document.getElementById("screen-wordlist").classList.remove("hidden");
+    this.filterWordList("all");
+  }
+
+  filterWordList(type) {
+    const container = document.getElementById("word-list-container");
+    container.innerHTML = "";
+
+    let filtered = [];
+
+    if (type === "all") filtered = this.words;
+    if (type === "stage1") filtered = this.words.filter(w => (w.s1Correct || 0) < 2);
+    if (type === "stage2") filtered = this.words.filter(w => (w.s1Correct || 0) >= 2 && (w.s2Correct || 0) < 2);
+    if (type === "stage3") filtered = this.words.filter(w => (w.s2Correct || 0) >= 2);
+
+    filtered.forEach(w => {
+      const card = document.createElement("div");
+
+      card.className =
+        "bg-white p-3 rounded-2xl border border-amber-200 shadow-sm flex justify-between items-center text-xs";
+
+      card.innerHTML = `
+        <div>
+          <div class="font-bold font-mono">${w.word}</div>
+          <div>${w.meaning}</div>
+        </div>
+        <div class="text-right text-[10px]">
+          S1:${w.s1Correct || 0}/2<br>
+          S2:${w.s2Correct || 0}/2<br>
+          S3:${w.s3Correct || 0}/3
+        </div>
+      `;
+
+      container.appendChild(card);
+    });
+  }
+
+  showToast(msg) {
+    const toast = document.createElement("div");
+
+    toast.className =
+      "fixed bottom-16 left-1/2 -translate-x-1/2 bg-amber-950/90 text-white text-xs px-4 py-3 rounded-full shadow-lg z-50 text-center max-w-xs transition-opacity duration-300";
+
+    toast.innerText = msg;
+
+    document.body.appendChild(toast);
+
+    setTimeout(() => {
+      toast.style.opacity = "0";
+      setTimeout(() => toast.remove(), 300);
+    }, 2500);
+  }
+}
+
+let app;
+
+window.onload = function () {
+  app = new KogePanEnglishApp();
+};</script>
+</body>
+</html>
