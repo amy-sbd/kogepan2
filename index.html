@@ -1229,7 +1229,7 @@ let distractorsSource =
   samePartWords.length >= 3 ? samePartWords : fallbackWords;
 
 let distractors = distractorsSource
-  startRound().sort(() => 0.5 - Math.random())
+  .sort(() => 0.5 - Math.random())
   .map(w => isEnglishTarget ? w.word : w.meaning);
 
 distractors = [...new Set(distractors)].slice(0, 3);
