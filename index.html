@@ -1649,37 +1649,168 @@ document.getElementById(
   }
 
   filterWordList(type) {
-    const container = document.getElementById("word-list-container");
-    container.innerHTML = "";
+  const container = document.getElementById("word-list-container");
+  container.innerHTML = "";
 
-    let filtered = [];
+  const getBakeStatus = (w) => {
+    const s1 = Math.min(w.s1Correct || 0, 2);
+    const s2 = Math.min(w.s2Correct || 0, 2);
+    const s3 = Math.min(w.s3Correct || 0, 3);
+    const wrong = w.wrongCount || 0;
 
-    if (type === "all") filtered = this.words;
-    if (type === "stage1") filtered = this.words.filter(w => (w.s1Correct || 0) < 2);
-    if (type === "stage2") filtered = this.words.filter(w => (w.s1Correct || 0) >= 2 && (w.s2Correct || 0) < 2);
-    if (type === "stage3") filtered = this.words.filter(w => (w.s2Correct || 0) >= 2);
+    if (s3 >= 3) {
+      return {
+        key: "perfect",
+        label: "🥐 きれいぱん",
+        className: "bg-yellow-100 text-yellow-800 border-yellow-300",
+        comment: "スペルまで焼き上がり！"
+      };
+    }
 
-    filtered.forEach(w => {
-      const card = document.createElement("div");
+    if (wrong >= 3) {
+      return {
+        key: "burn",
+        label: "🔥 こげ注意",
+        className: "bg-red-100 text-red-700 border-red-200",
+        comment: "もう一度ゆっくり焼こう"
+      };
+    }
 
-      card.className =
-        "bg-white p-3 rounded-2xl border border-amber-200 shadow-sm flex justify-between items-center text-xs";
+    if (s2 >= 2) {
+      return {
+        key: "half",
+        label: "🥖 半焼き",
+        className: "bg-orange-100 text-orange-700 border-orange-200",
+        comment: "スペル練習までもう少し"
+      };
+    }
 
-      card.innerHTML = `
-        <div>
-          <div class="font-bold font-mono">${w.word}</div>
-          <div>${w.meaning}</div>
-        </div>
-        <div class="text-right text-[10px]">
-          S1:${w.s1Correct || 0}/2<br>
-          S2:${w.s2Correct || 0}/2<br>
-          S3:${w.s3Correct || 0}/3
-        </div>
-      `;
+    if (s1 >= 2) {
+      return {
+        key: "seed",
+        label: "🍞 タネ",
+        className: "bg-amber-100 text-amber-700 border-amber-200",
+        comment: "意味は焼けてきたよ"
+      };
+    }
 
-      container.appendChild(card);
-    });
+    return {
+      key: "dough",
+      label: "🥚 生地",
+      className: "bg-stone-100 text-stone-700 border-stone-200",
+      comment: "これから焼いていくよ"
+    };
+  };
+
+  const counts = {
+    perfect: 0,
+    half: 0,
+    seed: 0,
+    dough: 0,
+    burn: 0
+  };
+
+  this.words.forEach(w => {
+    const status = getBakeStatus(w);
+    counts[status.key]++;
+  });
+
+  const graduatedCount = counts.perfect;
+  let title = "こげぱん見習い";
+  let nextGoal = "まずは5個のきれいぱんを焼こう！";
+
+  if (graduatedCount >= 100) {
+    title = "伝説のベーカリー店長";
+    nextGoal = "すごすぎる…ここまで焼けたら本物！";
+  } else if (graduatedCount >= 50) {
+    title = "キレイパン職人";
+    nextGoal = `あと${100 - graduatedCount}個で「伝説のベーカリー店長」！`;
+  } else if (graduatedCount >= 20) {
+    title = "こんがり職人";
+    nextGoal = `あと${50 - graduatedCount}個で「キレイパン職人」！`;
+  } else if (graduatedCount >= 5) {
+    title = "パン焼き係";
+    nextGoal = `あと${20 - graduatedCount}個で「こんがり職人」！`;
+  } else {
+    nextGoal = `あと${5 - graduatedCount}個で「パン焼き係」！`;
   }
+
+  const summaryCard = document.createElement("div");
+  summaryCard.className =
+    "bg-gradient-to-br from-yellow-50 to-orange-100 p-4 rounded-3xl border-2 border-yellow-300 shadow-md mb-4 text-xs";
+
+  summaryCard.innerHTML = `
+    <div class="text-center mb-3">
+      <div class="text-[11px] text-amber-600 font-bold">現在の称号</div>
+      <div class="text-lg font-black text-amber-950">🍞 ${title}</div>
+      <div class="text-[11px] text-orange-700 font-bold mt-1">${nextGoal}</div>
+    </div>
+
+    <div class="grid grid-cols-2 gap-2">
+      <div class="bg-white/80 rounded-2xl p-2 border border-yellow-200">
+        🥐 きれいぱん：<b>${counts.perfect}</b>
+      </div>
+      <div class="bg-white/80 rounded-2xl p-2 border border-orange-200">
+        🥖 半焼き：<b>${counts.half}</b>
+      </div>
+      <div class="bg-white/80 rounded-2xl p-2 border border-amber-200">
+        🍞 タネ：<b>${counts.seed}</b>
+      </div>
+      <div class="bg-white/80 rounded-2xl p-2 border border-stone-200">
+        🥚 生地：<b>${counts.dough}</b>
+      </div>
+      <div class="bg-white/80 rounded-2xl p-2 border border-red-200 col-span-2">
+        🔥 こげ注意：<b>${counts.burn}</b>
+      </div>
+    </div>
+  `;
+
+  container.appendChild(summaryCard);
+
+  let filtered = [];
+
+  if (type === "all") filtered = this.words;
+  if (type === "stage1") filtered = this.words.filter(w => (w.s1Correct || 0) < 2);
+  if (type === "stage2") filtered = this.words.filter(w => (w.s1Correct || 0) >= 2 && (w.s2Correct || 0) < 2);
+  if (type === "stage3") filtered = this.words.filter(w => (w.s2Correct || 0) >= 2);
+
+  filtered.forEach(w => {
+    const card = document.createElement("div");
+
+    const s1 = Math.min(w.s1Correct || 0, 2);
+    const s2 = Math.min(w.s2Correct || 0, 2);
+    const s3 = Math.min(w.s3Correct || 0, 3);
+    const status = getBakeStatus(w);
+
+    card.className =
+      "bg-white p-4 rounded-2xl border border-amber-200 shadow-sm text-xs";
+
+    card.innerHTML = `
+      <div class="flex justify-between items-start gap-3">
+        <div class="flex-1">
+          <div class="inline-block mb-2 px-3 py-1 rounded-full border text-[11px] font-bold ${status.className}">
+            ${status.label}
+          </div>
+
+          <div class="font-bold font-mono text-base text-amber-950">${w.word}</div>
+          <div class="text-sm text-amber-800">${w.meaning}</div>
+
+          <div class="mt-1 text-[10px] text-amber-500">
+            ${w.part || "単語"} ／ ${status.comment}
+          </div>
+        </div>
+
+        <div class="text-right text-[10px] text-amber-900 leading-relaxed min-w-[54px]">
+          S1:${s1}/2<br>
+          S2:${s2}/2<br>
+          S3:${s3}/3
+        </div>
+      </div>
+    `;
+
+    container.appendChild(card);
+  });
+}
 
   showToast(msg) {
     const toast = document.createElement("div");
