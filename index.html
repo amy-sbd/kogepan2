@@ -1218,19 +1218,36 @@
       ? this.currentWord.word
       : this.currentWord.meaning;
 
-    let distractors = this.words
-      .filter(w => w.id !== this.currentWord.id)
-      .filter(w => w.part === this.currentWord.part || Math.random() > 0.4)
-      .map(w => isEnglishTarget ? w.word : w.meaning);
+    let samePartWords = this.words
+  .filter(w => w.id !== this.currentWord.id)
+  .filter(w => w.part === this.currentWord.part);
 
-    distractors = [...new Set(distractors)]
-      .sort(() => 0.5 - Math.random())
-      .slice(0, 3);
+let fallbackWords = this.words
+  .filter(w => w.id !== this.currentWord.id);
 
-    while (distractors.length < 3) {
-      distractors.push(isEnglishTarget ? "bread" : "パン");
-    }
+let distractorsSource =
+  samePartWords.length >= 3 ? samePartWords : fallbackWords;
 
+let distractors = distractorsSource
+  startRound().sort(() => 0.5 - Math.random())
+  .map(w => isEnglishTarget ? w.word : w.meaning);
+
+distractors = [...new Set(distractors)].slice(0, 3);
+
+while (distractors.length < 3) {
+  const fallback =
+    fallbackWords[Math.floor(Math.random() * fallbackWords.length)];
+
+  const fallbackValue =
+    isEnglishTarget ? fallback.word : fallback.meaning;
+
+  if (
+    !distractors.includes(fallbackValue) &&
+    fallbackValue !== correctValue
+  ) {
+    distractors.push(fallbackValue);
+  }
+}
     const allChoices = [correctValue, ...distractors]
       .sort(() => 0.5 - Math.random());
 
