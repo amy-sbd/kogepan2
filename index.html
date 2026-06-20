@@ -797,6 +797,8 @@
 
    class KogePanEnglishApp {
   constructor() {
+    this.comboCount = 0;
+    this.maxCombo = 0;
     this.words = [];
     this.currentRoundWords = [];
     this.currentQuestionIndex = 0;
@@ -1093,8 +1095,10 @@
 
     this.currentRoundWords = this.pickWeightedWords(weightedWords, 10);
     this.currentQuestionIndex = 0;
-    this.score = 0;
-    this.roundLogs = [];
+this.score = 0;
+this.comboCount = 0;
+this.maxCombo = 0;
+this.roundLogs = [];
 
     this.hideAllScreens();
     document.getElementById("screen-quiz").classList.remove("hidden");
@@ -1287,7 +1291,14 @@ while (distractors.length < 3) {
     word.lastAnsweredAt = Date.now();
 
     if (isCorrect) {
-      this.score++;
+  this.score++;
+  this.comboCount++;
+
+  if (this.comboCount > this.maxCombo) {
+    this.maxCombo = this.comboCount;
+  }
+
+  this.showCombo(this.comboCount);
 
       if (this.currentStage === 1) {
         word.s1Correct = (word.s1Correct || 0) + 1;
@@ -1298,6 +1309,7 @@ while (distractors.length < 3) {
           word.unlockedStage = 2;
           isStageUp = true;
         }
+        
       }
 
       if (this.currentStage === 2) {
@@ -1317,10 +1329,13 @@ while (distractors.length < 3) {
         word.wrongCount = Math.max(0, (word.wrongCount || 0) - 1);
 
         if (word.s3Streak >= 3) {
-          isStageUp = true;
-        }
+  isStageUp = true;
+  this.showGraduation(word);
+}
+
       }
     } else {
+      this.comboCount = 0;
       word.wrongCount = (word.wrongCount || 0) + 1;
 
       if (this.currentStage === 1) {
@@ -1354,7 +1369,68 @@ while (distractors.length < 3) {
 
     this.showFeedback(isCorrect, isStageUp, userAnswerText, isStageDown);
   }
+showGraduation(word) {
+  const modal = document.createElement("div");
 
+  modal.className =
+    "fixed inset-0 bg-amber-950/80 flex flex-col justify-center items-center z-50 text-center px-6";
+
+  modal.innerHTML = `
+    <div class="text-5xl mb-4 animate-bounce">✨🍞✨</div>
+
+    <div class="text-8xl mb-4 animate-pulse">🥐</div>
+
+    <div class="bg-white rounded-3xl p-6 max-w-sm shadow-2xl border-4 border-yellow-300">
+      <div class="text-xl font-bold text-amber-900 mb-2">
+        ${word.word} 卒業！
+      </div>
+
+      <div class="text-sm text-amber-700 mb-4">
+        「きれいに焼き上がったよ！」
+      </div>
+
+      <div class="text-xs text-amber-600 mb-2">
+        こげぱん「おお〜！こんがり成功だね…！」
+      </div>
+
+      <div class="text-xs text-yellow-700 font-bold">
+        キレイパン「すごい！もう完ぺきだよ✨」
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+
+  setTimeout(() => {
+    modal.remove();
+  }, 4000);
+}
+showCombo(combo) {
+  let message = "";
+
+  if (combo === 3) {
+    message = "🔥 パン職人コンボ！";
+  } else if (combo === 5) {
+    message = "✨ 黄金こんがり！";
+  } else if (combo === 10) {
+    message = "👑 伝説のパン職人！";
+  } else {
+    return;
+  }
+
+  const comboBox = document.createElement("div");
+
+  comboBox.className =
+    "fixed top-20 left-1/2 -translate-x-1/2 bg-orange-400 text-white font-bold text-2xl px-6 py-4 rounded-3xl shadow-2xl z-50 animate-bounce";
+
+  comboBox.innerText = message;
+
+  document.body.appendChild(comboBox);
+
+  setTimeout(() => {
+    comboBox.remove();
+  }, 2500);
+}
   analyzeSpelling(userAnswer, correctWord) {
     const answer = (userAnswer || "").toLowerCase();
     const correct = correctWord.toLowerCase();
@@ -1481,10 +1557,26 @@ ${firstDiff + 1}文字目は、
     const screen = document.getElementById("screen-result");
     screen.classList.remove("hidden");
 
-    document.getElementById(
-      "result-score-text"
-    ).innerHTML =
-      `10問中 <span class="text-2xl text-green-700 font-bold">${this.score}問</span> 大正解！`;
+    let comboComment = "";
+
+if (this.maxCombo >= 10) {
+  comboComment = "👑 伝説のパン職人コンボ！";
+} else if (this.maxCombo >= 5) {
+  comboComment = "✨ 黄金こんがりコンボ！";
+} else if (this.maxCombo >= 3) {
+  comboComment = "🔥 パン職人コンボ！";
+} else if (this.maxCombo >= 1) {
+  comboComment = "🍞 いい焼きはじめ！";
+} else {
+  comboComment = "次はコンボをねらおう！";
+}
+
+document.getElementById(
+  "result-score-text"
+).innerHTML =
+  `10問中 <span class="text-2xl text-green-700 font-bold">${this.score}問</span> 大正解！<br>
+   <span class="text-sm text-orange-600 font-bold">最高コンボ：${this.maxCombo}コンボ</span><br>
+   <span class="text-xs text-amber-700">${comboComment}</span>`;
 
     const commentEl = document.getElementById("result-summary-comment");
 
