@@ -165,7 +165,7 @@
 
         <!-- 入力エリア（記述式 - ステージ3用） -->
         <div id="quiz-input-area" class="hidden flex-col space-y-3 pt-2">
-          <input type="text" id="quiz-typed-answer" autocomplete="off" placeholder="ここに英語のつづりをかいてね" class="w-full p-4 border-2 border-amber-300 rounded-2xl text-center text-xl font-bold focus:outline-none focus:border-amber-600 text-amber-950 bg-white">
+          <input type="text" id="quiz-typed-answer" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" inputmode="latin" placeholder="ここに英語のつづりをかいてね" class="w-full p-4 border-2 border-amber-300 rounded-2xl text-center text-xl font-bold focus:outline-none focus:border-amber-600 text-amber-950 bg-white">
           <button onclick="app.submitTypedAnswer()" class="w-full bg-[#7F5539] text-white py-4 rounded-2xl font-bold text-lg btn-bounce shadow-md">
             これで決まり！ 🍞
           </button>
@@ -1141,15 +1141,13 @@ this.roundLogs = [];
   }
 
   loadQuestion() {
-    this.currentWord = this.currentRoundWords[this.currentQuestionIndex];
+  this.currentWord = this.currentRoundWords[this.currentQuestionIndex];
 
-    if ((this.currentWord.s1Correct || 0) < 2) {
-      this.currentStage = 1;
-    } else if ((this.currentWord.s2Correct || 0) < 2) {
-      this.currentStage = 2;
-    } else {
-      this.currentStage = 3;
-    }
+  if ((this.currentWord.s1Correct || 0) < 1) {
+    this.currentStage = 1;
+  } else {
+    this.currentStage = 3;
+  }
 
     document.getElementById("quiz-question-number").innerText =
       `第 ${this.currentQuestionIndex + 1} / ${this.currentRoundWords.length} 問`;
@@ -1173,11 +1171,11 @@ this.roundLogs = [];
     inputArea.classList.add("hidden");
     typedAnswer.value = "";
 
-    if (this.currentStage === 1) {
-      stageTitle.innerText = "ステージ 1：日本語 ➔ 英語 (4択)";
-      promptEl.innerText = this.currentWord.meaning;
-      choicesArea.classList.remove("hidden");
-      this.generateChoices(true);
+   if (this.currentStage === 1) {
+  stageTitle.innerText = "ステージ 1：英語 ➔ 日本語 (4択)";
+  promptEl.innerText = this.currentWord.word;
+  choicesArea.classList.remove("hidden");
+  this.generateChoices(false);
     } else if (this.currentStage === 2) {
       stageTitle.innerText = "ステージ 2：英語 ➔ 日本語 (4択)";
       promptEl.innerText = this.currentWord.word;
@@ -1311,16 +1309,20 @@ while (distractors.length < 3) {
   this.showCombo(this.comboCount);
 
       if (this.currentStage === 1) {
-        word.s1Correct = (word.s1Correct || 0) + 1;
-        word.s1Streak = (word.s1Streak || 0) + 1;
-        word.wrongCount = Math.max(0, (word.wrongCount || 0) - 1);
+  word.s1Correct = (word.s1Correct || 0) + 1;
+  word.s1Streak = (word.s1Streak || 0) + 1;
+  word.wrongCount = Math.max(0, (word.wrongCount || 0) - 1);
 
-        if (word.s1Streak >= 2) {
-          word.unlockedStage = 2;
-          isStageUp = true;
-        }
-        
-      }
+  if (word.s1Streak >= 1) {
+    word.unlockedStage = 3;
+
+    // 英訳ステージは使わないので、内部的にはクリア扱いにする
+    word.s2Correct = 2;
+    word.s2Streak = 2;
+
+    isStageUp = true;
+  }
+}
 
       if (this.currentStage === 2) {
         word.s2Correct = (word.s2Correct || 0) + 1;
