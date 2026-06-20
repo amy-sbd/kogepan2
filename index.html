@@ -245,9 +245,9 @@
         <!-- 図鑑フィルターボタン -->
         <div class="flex gap-1 text-xs justify-between overflow-x-auto pb-1">
           <button onclick="app.filterWordList('all')" id="btn-filter-all" class="bg-amber-700 text-white px-2 py-1.5 rounded-md shrink-0">すべて</button>
-          <button onclick="app.filterWordList('stage1')" id="btn-filter-stage1" class="bg-amber-100 text-amber-800 px-2 py-1.5 rounded-md shrink-0">タネ(S1)</button>
-          <button onclick="app.filterWordList('stage2')" id="btn-filter-stage2" class="bg-amber-100 text-amber-800 px-2 py-1.5 rounded-md shrink-0">半焼き(S2)</button>
-          <button onclick="app.filterWordList('stage3')" id="btn-filter-stage3" class="bg-amber-100 text-amber-800 px-2 py-1.5 rounded-md shrink-0">きれいぱん(クリア)</button>
+          <button onclick="app.filterWordList('stage1')" id="btn-filter-stage1" class="bg-amber-100 text-amber-800 px-2 py-1.5 rounded-md shrink-0">意味OK</button>
+          <button onclick="app.filterWordList('stage2')" id="btn-filter-stage2" class="bg-amber-100 text-amber-800 px-2 py-1.5 rounded-md shrink-0">スペル練習中</button>
+          <button onclick="app.filterWordList('stage3')" id="btn-filter-stage3" class="bg-amber-100 text-amber-800 px-2 py-1.5 rounded-md shrink-0">きれいぱん</button>
         </div>
 
         <!-- 図鑑リストスクロール領域 -->
@@ -1479,79 +1479,84 @@ ${firstDiff + 1}文字目は、
 正しいスペルは <b>${correct}</b> だよ。`;
   }
 
-  showFeedback(isCorrect, isStageUp, userAnswerText, isStageDown = false) {
-    this.hideAllScreens();
+ showFeedback(isCorrect, isStageUp, userAnswerText, isStageDown = false) {
+  this.hideAllScreens();
 
-    const screen = document.getElementById("screen-feedback");
-    screen.classList.remove("hidden");
+  const screen = document.getElementById("screen-feedback");
+  screen.classList.remove("hidden");
 
-    const charContainer = document.getElementById("feedback-character-container");
-    const banner = document.getElementById("feedback-result-banner");
-    const wordTitle = document.getElementById("feedback-word-title");
-    const wordMeaning = document.getElementById("feedback-word-meaning");
-    const feedbackText = document.getElementById("feedback-text");
+  const charContainer = document.getElementById("feedback-character-container");
+  const banner = document.getElementById("feedback-result-banner");
+  const wordTitle = document.getElementById("feedback-word-title");
+  const wordMeaning = document.getElementById("feedback-word-meaning");
+  const feedbackText = document.getElementById("feedback-text");
 
-    wordTitle.innerText = this.currentWord.word;
-    wordMeaning.innerText = `意味：${this.currentWord.meaning}`;
+  wordTitle.innerText = this.currentWord.word;
+  wordMeaning.innerText = `意味：${this.currentWord.meaning}`;
 
-    if (isCorrect) {
-      charContainer.innerHTML = CharacterSVGs.praise;
+  if (isCorrect) {
+    charContainer.innerHTML = CharacterSVGs.praise;
 
-      banner.innerHTML = `
-        <p class="text-amber-500 text-xs font-bold uppercase tracking-wider">CORRECT!</p>
-        <h3 class="text-3xl font-extrabold text-green-700 font-magic animate-bounce">✨ 大正解！ ✨</h3>
-      `;
+    banner.innerHTML = `
+      <p class="text-amber-500 text-xs font-bold uppercase tracking-wider">CORRECT!</p>
+      <h3 class="text-3xl font-extrabold text-green-700 font-magic animate-bounce">✨ 大正解！ ✨</h3>
+    `;
 
-      const praiseMessages = [
-        "「いい焼き加減だよ！この単語、ちょっとずつ頭に残ってきてるね🍞」",
-        "「正解！今の一問で、パン生地がふくらんだ気がするよ🥖」",
-        "「やったね。焦げずにきれいに焼けたよ。次もこの調子でいこう✨」",
-        "「すごい、ちゃんと覚えてたね。こげぱんも少し自信が出てきたよ…！」"
-      ];
+    const praiseMessages = [
+      "「いい焼き加減！この単語、ちゃんと頭に残ってきてるよ🍞」",
+      "「正解！ひとつずつ、きれいぱんに近づいてるね🥐」",
+      "「やったね。焦げずにいい感じで焼けてるよ✨」",
+      "「すごい、ちゃんと覚えてたね。次もこの調子でいこう！」"
+    ];
 
-      if (isStageUp) {
-        if (this.currentStage === 1) {
-          feedbackText.innerHTML =
-            "🌟 <b>ステージ1クリア！</b>\n\n日本語を見て英語を選べるようになってきたよ。次は、英語を見て日本語の意味を確認するステージ2に進むよ。";
-        } else if (this.currentStage === 2) {
-          feedbackText.innerHTML =
-            "🌟🌟 <b>ステージ2クリア！</b>\n\n意味の確認はかなり安定してきたよ。次はいよいよ、英語のスペルを自分で書くステージ3だよ。";
-        } else {
-          feedbackText.innerHTML =
-            "🌟🌟🌟 <b>完全クリア！極上のきれいぱん完成！</b>\n\nスペルまで3回連続で正解できたよ。この単語はかなり定着してきたね🍞✨";
-        }
+    if (isStageUp) {
+      if (this.currentStage === 1) {
+        feedbackText.innerHTML =
+          "🌟 <b>意味チェッククリア！</b><br><br>英単語を見て、日本語の意味がわかったね。<br><br>次はこの単語の <b>スペル入力</b> に挑戦するよ。きれいぱんまであと少し！";
+      } else if (this.currentStage === 3) {
+        feedbackText.innerHTML =
+          "🌟🌟🌟 <b>きれいぱん完成！</b><br><br>スペルまでしっかり書けたよ。<br><br>この単語はかなり焼き上がってきたね🍞✨";
+      } else {
+        feedbackText.innerHTML =
+          "🌟 <b>クリア！</b><br><br>いい感じに焼けてきたよ。次も進めよう！";
+      }
+    } else {
+      if (this.currentStage === 3) {
+        feedbackText.innerHTML =
+          "「スペル正解！かなり焼けてきてるよ🥐<br><br>あと少しで、きれいぱんになりそう！」";
       } else {
         feedbackText.innerText =
           praiseMessages[Math.floor(Math.random() * praiseMessages.length)];
       }
-    } else {
-      charContainer.innerHTML = CharacterSVGs.disappoint;
-
-      banner.innerHTML = `
-        <p class="text-amber-600 text-xs font-bold uppercase tracking-wider">DON'T MIND</p>
-        <h3 class="text-2xl font-bold text-amber-800 font-magic">焼き直そう 🍞</h3>
-      `;
-
-      const correctWord = this.currentWord.word;
-      const correctMeaning = this.currentWord.meaning;
-
-      if (this.currentStage === 1) {
-        feedbackText.innerHTML =
-          `「惜しかったね。\n\n『${correctMeaning}』を英語にすると、正解は <b>${correctWord}</b> だよ。\n\nまずは日本語を見て英語を選べるところから、もう一度焼き直そう。」`;
-      } else if (this.currentStage === 2) {
-        feedbackText.innerHTML =
-          `「ここで一度タネに戻して固め直そう。\n\n英単語 <b>${correctWord}</b> の意味は <b>${correctMeaning}</b> だよ。\n\n次に出たら、まず形と意味をつなげよう。」`;
-      } else {
-        const userDisplay =
-          userAnswerText === "" ? "（なにも書いてないよ）" : userAnswerText;
-
-        const diffAnalysis = this.analyzeSpelling(userAnswerText, correctWord);
-
-        feedbackText.innerHTML =
-          `「スペルは難しいところだよ。今回は半焼きに戻して、もう一度意味から固めよう。\n\n君の答え：<b>${userDisplay}</b>\n\n${diffAnalysis}\n\n『${correctMeaning}』の正しいスペルは <b>${correctWord}</b> だよ。」`;
-      }
     }
-  }  nextQuestion() {
+  } else {
+    charContainer.innerHTML = CharacterSVGs.disappoint;
+
+    banner.innerHTML = `
+      <p class="text-amber-600 text-xs font-bold uppercase tracking-wider">DON'T MIND</p>
+      <h3 class="text-2xl font-bold text-amber-800 font-magic">焼き直そう 🍞</h3>
+    `;
+
+    const correctWord = this.currentWord.word;
+    const correctMeaning = this.currentWord.meaning;
+
+    if (this.currentStage === 1) {
+      feedbackText.innerHTML =
+        `「惜しかったね。<br><br>英単語 <b>${correctWord}</b> の意味は <b>${correctMeaning}</b> だよ。<br><br>まずは英語の形と意味をつなげよう。もう一度ゆっくり焼き直し！」`;
+    } else if (this.currentStage === 3) {
+      const userDisplay =
+        userAnswerText === "" ? "（なにも書いてないよ）" : userAnswerText;
+
+      const diffAnalysis = this.analyzeSpelling(userAnswerText, correctWord);
+
+      feedbackText.innerHTML =
+        `「スペルは難しいところだよ。今回はいったん意味チェックに戻して、もう一度焼き直そう。<br><br>君の答え：<b>${userDisplay}</b><br><br>${diffAnalysis}<br><br><b>${correctMeaning}</b> の正しいスペルは <b>${correctWord}</b> だよ。」`;
+    } else {
+      feedbackText.innerHTML =
+        `「惜しかったね。<br><br><b>${correctWord}</b> の意味は <b>${correctMeaning}</b> だよ。<br><br>もう一度、形と意味をつなげてみよう。」`;
+    }
+  }
+}  nextQuestion() {
     this.currentQuestionIndex++;
 
     if (this.currentQuestionIndex < this.currentRoundWords.length) {
@@ -1665,132 +1670,130 @@ document.getElementById(
   container.innerHTML = "";
 
   const getBakeStatus = (w) => {
-    const s1 = Math.min(w.s1Correct || 0, 2);
-    const s2 = Math.min(w.s2Correct || 0, 2);
-    const s3 = Math.min(w.s3Correct || 0, 3);
-    const wrong = w.wrongCount || 0;
+  const s1 = Math.min(w.s1Correct || 0, 1);
+  const s3 = Math.min(w.s3Correct || 0, 3);
+  const wrong = w.wrongCount || 0;
 
-    if (s3 >= 3) {
-      return {
-        key: "perfect",
-        label: "🥐 きれいぱん",
-        className: "bg-yellow-100 text-yellow-800 border-yellow-300",
-        comment: "スペルまで焼き上がり！"
-      };
-    }
-
-    if (wrong >= 3) {
-      return {
-        key: "burn",
-        label: "🔥 こげ注意",
-        className: "bg-red-100 text-red-700 border-red-200",
-        comment: "もう一度ゆっくり焼こう"
-      };
-    }
-
-    if (s2 >= 2) {
-      return {
-        key: "half",
-        label: "🥖 半焼き",
-        className: "bg-orange-100 text-orange-700 border-orange-200",
-        comment: "スペル練習までもう少し"
-      };
-    }
-
-    if (s1 >= 2) {
-      return {
-        key: "seed",
-        label: "🍞 タネ",
-        className: "bg-amber-100 text-amber-700 border-amber-200",
-        comment: "意味は焼けてきたよ"
-      };
-    }
-
+  if (s3 >= 3) {
     return {
-      key: "dough",
-      label: "🥚 生地",
-      className: "bg-stone-100 text-stone-700 border-stone-200",
-      comment: "これから焼いていくよ"
+      key: "perfect",
+      label: "🥐 きれいぱん",
+      className: "bg-yellow-100 text-yellow-800 border-yellow-300",
+      comment: "スペルまで焼き上がり！"
     };
-  };
-
-  const counts = {
-    perfect: 0,
-    half: 0,
-    seed: 0,
-    dough: 0,
-    burn: 0
-  };
-
-  this.words.forEach(w => {
-    const status = getBakeStatus(w);
-    counts[status.key]++;
-  });
-
-  const graduatedCount = counts.perfect;
-  let title = "こげぱん見習い";
-  let nextGoal = "まずは5個のきれいぱんを焼こう！";
-
-  if (graduatedCount >= 100) {
-    title = "伝説のベーカリー店長";
-    nextGoal = "すごすぎる…ここまで焼けたら本物！";
-  } else if (graduatedCount >= 50) {
-    title = "キレイパン職人";
-    nextGoal = `あと${100 - graduatedCount}個で「伝説のベーカリー店長」！`;
-  } else if (graduatedCount >= 20) {
-    title = "こんがり職人";
-    nextGoal = `あと${50 - graduatedCount}個で「キレイパン職人」！`;
-  } else if (graduatedCount >= 5) {
-    title = "パン焼き係";
-    nextGoal = `あと${20 - graduatedCount}個で「こんがり職人」！`;
-  } else {
-    nextGoal = `あと${5 - graduatedCount}個で「パン焼き係」！`;
   }
 
-  const summaryCard = document.createElement("div");
-  summaryCard.className =
-    "bg-gradient-to-br from-yellow-50 to-orange-100 p-4 rounded-3xl border-2 border-yellow-300 shadow-md mb-4 text-xs";
+  if (wrong >= 3) {
+    return {
+      key: "burn",
+      label: "🔥 こげ注意",
+      className: "bg-red-100 text-red-700 border-red-200",
+      comment: "ゆっくり焼き直そう"
+    };
+  }
 
-  summaryCard.innerHTML = `
-    <div class="text-center mb-3">
-      <div class="text-[11px] text-amber-600 font-bold">現在の称号</div>
-      <div class="text-lg font-black text-amber-950">🍞 ${title}</div>
-      <div class="text-[11px] text-orange-700 font-bold mt-1">${nextGoal}</div>
-    </div>
+  if (s3 > 0) {
+    return {
+      key: "spelling",
+      label: "🥖 スペル練習中",
+      className: "bg-orange-100 text-orange-700 border-orange-200",
+      comment: "きれいぱんまであと少し"
+    };
+  }
 
-    <div class="grid grid-cols-2 gap-2">
-      <div class="bg-white/80 rounded-2xl p-2 border border-yellow-200">
-        🥐 きれいぱん：<b>${counts.perfect}</b>
-      </div>
-      <div class="bg-white/80 rounded-2xl p-2 border border-orange-200">
-        🥖 半焼き：<b>${counts.half}</b>
-      </div>
-      <div class="bg-white/80 rounded-2xl p-2 border border-amber-200">
-        🍞 タネ：<b>${counts.seed}</b>
-      </div>
-      <div class="bg-white/80 rounded-2xl p-2 border border-stone-200">
-        🥚 生地：<b>${counts.dough}</b>
-      </div>
-      <div class="bg-white/80 rounded-2xl p-2 border border-red-200 col-span-2">
-        🔥 こげ注意：<b>${counts.burn}</b>
-      </div>
+  if (s1 >= 1) {
+    return {
+      key: "meaning",
+      label: "🍞 意味OK",
+      className: "bg-amber-100 text-amber-700 border-amber-200",
+      comment: "次はスペルに挑戦"
+    };
+  }
+
+  return {
+    key: "dough",
+    label: "🥚 生地",
+    className: "bg-stone-100 text-stone-700 border-stone-200",
+    comment: "まずは意味チェックから"
+  };
+};
+
+const counts = {
+  perfect: 0,
+  spelling: 0,
+  meaning: 0,
+  dough: 0,
+  burn: 0
+};
+
+this.words.forEach(w => {
+  const status = getBakeStatus(w);
+  counts[status.key]++;
+});
+
+ const graduatedCount = counts.perfect;
+let title = "こげぱん見習い";
+let nextGoal = "まずは5個のきれいぱんを焼こう！";
+
+if (graduatedCount >= 100) {
+  title = "伝説のベーカリー店長";
+  nextGoal = "すごすぎる…ここまで焼けたら本物！";
+} else if (graduatedCount >= 50) {
+  title = "キレイパン職人";
+  nextGoal = `あと${100 - graduatedCount}個で「伝説のベーカリー店長」！`;
+} else if (graduatedCount >= 20) {
+  title = "こんがり職人";
+  nextGoal = `あと${50 - graduatedCount}個で「キレイパン職人」！`;
+} else if (graduatedCount >= 5) {
+  title = "パン焼き係";
+  nextGoal = `あと${20 - graduatedCount}個で「こんがり職人」！`;
+} else {
+  nextGoal = `あと${5 - graduatedCount}個で「パン焼き係」！`;
+}
+
+const summaryCard = document.createElement("div");
+summaryCard.className =
+  "bg-gradient-to-br from-yellow-50 to-orange-100 p-4 rounded-3xl border-2 border-yellow-300 shadow-md mb-4 text-xs";
+
+summaryCard.innerHTML = `
+  <div class="text-center mb-3">
+    <div class="text-[11px] text-amber-600 font-bold">現在の称号</div>
+    <div class="text-lg font-black text-amber-950">🍞 ${title}</div>
+    <div class="text-[11px] text-orange-700 font-bold mt-1">${nextGoal}</div>
+  </div>
+
+  <div class="grid grid-cols-2 gap-2">
+    <div class="bg-white/80 rounded-2xl p-2 border border-yellow-200">
+      🥐 きれいぱん：<b>${counts.perfect}</b>
     </div>
-  `;
+    <div class="bg-white/80 rounded-2xl p-2 border border-orange-200">
+      🥖 スペル練習中：<b>${counts.spelling}</b>
+    </div>
+    <div class="bg-white/80 rounded-2xl p-2 border border-amber-200">
+      🍞 意味OK：<b>${counts.meaning}</b>
+    </div>
+    <div class="bg-white/80 rounded-2xl p-2 border border-stone-200">
+      🥚 生地：<b>${counts.dough}</b>
+    </div>
+    <div class="bg-white/80 rounded-2xl p-2 border border-red-200 col-span-2">
+      🔥 こげ注意：<b>${counts.burn}</b>
+    </div>
+  </div>
+`;
 
   container.appendChild(summaryCard);
 
   let filtered = [];
 
-  if (type === "all") filtered = this.words;
-  if (type === "stage1") filtered = this.words.filter(w => (w.s1Correct || 0) >= 2 && (w.s2Correct || 0) < 2);
-if (type === "stage2") filtered = this.words.filter(w => (w.s2Correct || 0) >= 2 && (w.s3Correct || 0) < 3);
+ if (type === "all") filtered = this.words;
+if (type === "stage1") filtered = this.words.filter(w => (w.s1Correct || 0) >= 1 && (w.s3Correct || 0) === 0);
+if (type === "stage2") filtered = this.words.filter(w => (w.s3Correct || 0) > 0 && (w.s3Correct || 0) < 3);
 if (type === "stage3") filtered = this.words.filter(w => (w.s3Correct || 0) >= 3);
   filtered.forEach(w => {
   const card = document.createElement("div");
 
-  const s1 = Math.min(w.s1Correct || 0, 2);
-  const s2 = Math.min(w.s2Correct || 0, 2);
-  const s3 = Math.min(w.s3Correct || 0, 3);
+  const s1 = Math.min(w.s1Correct || 0, 1);
+const s3 = Math.min(w.s3Correct || 0, 3);
   const status = getBakeStatus(w);
 
   let specialGraphic = "";
@@ -1846,9 +1849,8 @@ if (type === "stage3") filtered = this.words.filter(w => (w.s3Correct || 0) >= 3
       </div>
 
       <div class="text-right text-[10px] text-amber-900 leading-relaxed min-w-[54px]">
-        S1:${s1}/2<br>
-        S2:${s2}/2<br>
-        S3:${s3}/3
+        意味:${s1}/1<br>
+スペル:${s3}/3
       </div>
     </div>
   `;
