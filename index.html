@@ -244,10 +244,9 @@
 
         <!-- 図鑑フィルターボタン -->
         <div class="flex gap-1 text-xs justify-between overflow-x-auto pb-1">
-          <button onclick="app.filterWordList('all')" id="btn-filter-all" class="bg-amber-700 text-white px-2 py-1.5 rounded-md shrink-0">すべて</button>
-          <button onclick="app.filterWordList('stage1')" id="btn-filter-stage1" class="bg-amber-100 text-amber-800 px-2 py-1.5 rounded-md shrink-0">意味OK</button>
-          <button onclick="app.filterWordList('stage2')" id="btn-filter-stage2" class="bg-amber-100 text-amber-800 px-2 py-1.5 rounded-md shrink-0">スペル練習中</button>
-          <button onclick="app.filterWordList('stage3')" id="btn-filter-stage3" class="bg-amber-100 text-amber-800 px-2 py-1.5 rounded-md shrink-0">きれいぱん</button>
+          <button onclick="app.filterWordList('all')">すべて</button>
+<button onclick="app.filterWordList('stage2')">スペル待ち</button>
+<button onclick="app.filterWordList('stage3')">きれいぱん</button>
         </div>
 
         <!-- 図鑑リストスクロール領域 -->
@@ -799,6 +798,8 @@
   constructor() {
     this.comboCount = 0;
     this.maxCombo = 0;
+    this.currentUnit = 1;
+    this.unitSize = 10;
     this.words = [];
     this.currentRoundWords = [];
     this.currentQuestionIndex = 0;
@@ -1076,22 +1077,27 @@ if (footerStatus) {
   }
 
   startRound() {
-    let availableWords = this.words.filter(w => (w.s3Correct || 0) < 3);
+  const unitStart = (this.currentUnit - 1) * this.unitSize + 1;
+  const unitEnd = unitStart + this.unitSize - 1;
 
-    if (availableWords.length === 0) {
-      availableWords = [...this.words];
-      this.showToast("全クリア中だから、すべての単語からランダムに復習するよ！");
-    }
+  const unitWords = this.words.filter(w => w.id >= unitStart && w.id <= unitEnd);
 
+  let availableWords = [...unitWords];
+
+  if (availableWords.length === 0) {
+    availableWords = [...this.words];
+    this.showToast("このユニットに単語が見つからないので、全体から出すよ！");
+  }
     const weightedWords = availableWords.map(w => {
-      let weight = 1;
+  let weight = 1;
 
-      weight += (w.wrongCount || 0) * 4;
+  weight += (w.wrongCount || 0) * 4;
 
-      if ((w.s1Correct || 0) < 2) weight += 3;
-      if ((w.s1Correct || 0) >= 2 && (w.s2Correct || 0) < 2) weight += 4;
-      if ((w.s2Correct || 0) >= 2 && (w.s3Correct || 0) < 3) weight += 6;
+  // まだ意味チェックができていない単語
+  if ((w.s1Correct || 0) < 1) weight += 3;
 
+  // 意味はOK、まだキレイパンではない単語
+  if ((w.s1Correct || 0) >= 1 && (w.s3Correct || 0) < 1) weight += 6;
       const daysPassed = w.lastAnsweredAt
         ? (Date.now() - w.lastAnsweredAt) / (1000 * 60 * 60 * 24)
         : 7;
@@ -1172,23 +1178,18 @@ this.roundLogs = [];
     typedAnswer.value = "";
 
    if (this.currentStage === 1) {
-  stageTitle.innerText = "ステージ 1：英語 ➔ 日本語 (4択)";
+  stageTitle.innerText = "意味チェック：英語の意味をえらぼう";
   promptEl.innerText = this.currentWord.word;
   choicesArea.classList.remove("hidden");
   this.generateChoices(false);
-    } else if (this.currentStage === 2) {
-      stageTitle.innerText = "ステージ 2：英語 ➔ 日本語 (4択)";
-      promptEl.innerText = this.currentWord.word;
-      choicesArea.classList.remove("hidden");
-      this.generateChoices(false);
-    } else {
-      stageTitle.innerText = "ステージ 3：スペル入力 (記述式)";
-      promptEl.innerText = this.currentWord.meaning;
-      hintEl.innerText = `💡 ヒント: ${this.currentWord.hint}`;
-      hintEl.classList.remove("hidden");
-      inputArea.classList.remove("hidden");
-      setTimeout(() => typedAnswer.focus(), 250);
-    }
+} else {
+  stageTitle.innerText = "スペルチャレンジ：英語で書いてみよう";
+  promptEl.innerText = this.currentWord.meaning;
+  hintEl.innerText = `💡 ヒント: ${this.currentWord.hint}`;
+  hintEl.classList.remove("hidden");
+  inputArea.classList.remove("hidden");
+  setTimeout(() => typedAnswer.focus(), 250);
+}
   }
 
   drawStars(container) {
@@ -1206,7 +1207,7 @@ this.roundLogs = [];
   statusText = "✨ きれいぱん完成！";
   color = "text-amber-600";
 } else if (s1 >= 1) {
-  statusText = `🥖 スペル練習中 ${st3}/1`;
+  statusText = `🥖 スペルチャレンジ ${st3}/1`;
   color = "text-orange-500";
 } else {
   statusText = `🥚 意味チェック中 ${st1}/1`;
@@ -1358,10 +1359,13 @@ while (distractors.length < 3) {
       }
 
       if (this.currentStage === 3) {
-        word.s3Streak = 0;
-        word.unlockedStage = 2;
-        isStageDown = true;
-      }
+  word.s1Correct = 0;
+  word.s1Streak = 0;
+  word.s3Correct = 0;
+  word.s3Streak = 0;
+  word.unlockedStage = 1;
+  isStageDown = true;
+}
     }
 
     this.saveData();
@@ -1412,7 +1416,7 @@ showGraduation(word) {
 
   setTimeout(() => {
     modal.remove();
-  }, 4000);
+  }, 1500);
 }
 showCombo(combo) {
   let message = "";
@@ -1753,28 +1757,27 @@ summaryCard.innerHTML = `
     <div class="bg-white/80 rounded-2xl p-2 border border-yellow-200">
       🥐 きれいぱん：<b>${counts.perfect}</b>
     </div>
-    <div class="bg-white/80 rounded-2xl p-2 border border-orange-200">
-      🥖 スペル練習中：<b>${counts.spelling}</b>
-    </div>
+
     <div class="bg-white/80 rounded-2xl p-2 border border-amber-200">
-      🍞 意味OK：<b>${counts.meaning}</b>
+      ✏️ スペル待ち：<b>${counts.meaning}</b>
     </div>
+
     <div class="bg-white/80 rounded-2xl p-2 border border-stone-200">
       🥚 生地：<b>${counts.dough}</b>
     </div>
-    <div class="bg-white/80 rounded-2xl p-2 border border-red-200 col-span-2">
+
+    <div class="bg-white/80 rounded-2xl p-2 border border-red-200">
       🔥 こげ注意：<b>${counts.burn}</b>
     </div>
   </div>
 `;
-
   container.appendChild(summaryCard);
 
   let filtered = [];
 
  if (type === "all") filtered = this.words;
 if (type === "stage1") filtered = this.words.filter(w => (w.s1Correct || 0) >= 1 && (w.s3Correct || 0) === 0);
-if (type === "stage2") filtered = this.words.filter(w => (w.s3Correct || 0) > 0 && (w.s3Correct || 0) < 3);
+if (type === "stage2") filtered = this.words.filter(w => (w.s1Correct || 0) >= 1 && (w.s3Correct || 0) < 1);
 if (type === "stage3") filtered = this.words.filter(w => (w.s3Correct || 0) >= 1);
   filtered.forEach(w => {
   const card = document.createElement("div");
@@ -1837,7 +1840,7 @@ const s3 = Math.min(w.s3Correct || 0, 3);
 
       <div class="text-right text-[10px] text-amber-900 leading-relaxed min-w-[54px]">
         意味:${s1}/1<br>
-スペル:${s3}/3
+スペル:${s3}/1
       </div>
     </div>
   `;
