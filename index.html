@@ -803,50 +803,53 @@
 
    class KogePanEnglishApp {
   constructor() {
-    this.currentUnit = 1;
-    this.unitSize = 10;
-    this.wordSetId = "jh1";
-    this.unitProgress = this.loadUnitProgress();
-    this.words = [];
-    this.currentRoundWords = [];
-    this.currentQuestionIndex = 0;
-    this.currentWord = null;
-    this.currentStage = 1;
-    this.score = 0;
-    this.roundLogs = [];
+  this.unitSize = 10;
+  this.wordSetId = "jh1";
+  this.unitProgress = this.loadUnitProgress();
+  this.currentUnit = 1;
 
-    this.init();
-  }
+  this.words = [];
+  this.currentRoundWords = [];
+  this.currentQuestionIndex = 0;
+  this.currentWord = null;
+  this.currentStage = 1;
+  this.score = 0;
+  this.roundLogs = [];
+
+  this.init();
+}
 
   init() {
-    const ua = navigator.userAgent.toLowerCase();
-    if (
-      ua.indexOf("line") > -1 ||
-      ua.indexOf("fban") > -1 ||
-      ua.indexOf("fbav") > -1 ||
-      ua.indexOf("ybrowser") > -1
-    ) {
-      const warnEl = document.getElementById("browser-warning");
-      if (warnEl) warnEl.classList.remove("hidden");
-    }
+  const ua = navigator.userAgent.toLowerCase();
+  if (
+    ua.indexOf("line") > -1 ||
+    ua.indexOf("fban") > -1 ||
+    ua.indexOf("fbav") > -1 ||
+    ua.indexOf("ybrowser") > -1
+  ) {
+    const warnEl = document.getElementById("browser-warning");
+    if (warnEl) warnEl.classList.remove("hidden");
+  }
 
-    const savedDataV3 = localStorage.getItem("kogepan_vocab_progress_v3");
-    const savedDataV2 = localStorage.getItem("kogepan_vocab_progress_v2");
+  const savedDataV3 = localStorage.getItem("kogepan_vocab_progress_v3");
+  const savedDataV2 = localStorage.getItem("kogepan_vocab_progress_v2");
 
-    if (savedDataV3 || savedDataV2) {
-      try {
-        this.words = JSON.parse(savedDataV3 || savedDataV2);
-        this.mergeDatabase();
-      } catch (e) {
-        this.resetToDefault();
-      }
-    } else {
+  if (savedDataV3 || savedDataV2) {
+    try {
+      this.words = JSON.parse(savedDataV3 || savedDataV2);
+      this.mergeDatabase();
+    } catch (e) {
       this.resetToDefault();
     }
-
-    this.updateTotalProgressDisplay();
-    this.showStartScreen();
+  } else {
+    this.resetToDefault();
   }
+
+  this.currentUnit = this.decideTodayUnit();
+
+  this.updateTotalProgressDisplay();
+  this.showStartScreen();
+}
 
   resetToDefault() {
     this.words = WORD_DATABASE.map(w => ({
@@ -1087,6 +1090,29 @@ getMaxUnit() {
   return Math.max(1, Math.ceil(this.words.length / this.unitSize));
 }
 
+decideTodayUnit() {
+  const maxUnit = this.getMaxUnit();
+
+  for (let unit = 1; unit <= maxUnit; unit++) {
+    const dueReviewDay = this.getDueReviewDay(unit);
+
+    if (dueReviewDay !== null) {
+      console.log(`今日はユニット${unit}の${dueReviewDay}日後復習です`);
+      return unit;
+    }
+  }
+
+  for (let unit = 1; unit <= maxUnit; unit++) {
+    if (!this.isUnitCompleted(unit)) {
+      console.log(`今日は新規ユニット${unit}です`);
+      return unit;
+    }
+  }
+
+  console.log("すべてのユニットが完了しています。最後のユニットを表示します");
+  return maxUnit;
+}
+
 getUnitRangeText() {
   const unitStart = (this.currentUnit - 1) * this.unitSize + 1;
   const unitEnd = Math.min(unitStart + this.unitSize - 1, this.words.length);
@@ -1103,6 +1129,49 @@ getTodayString() {
   const month = String(now.getMonth() + 1).padStart(2, "0");
   const day = String(now.getDate()).padStart(2, "0");
   return `${year}-${month}-${day}`;
+}
+
+getDateOnly(dateString) {
+  const parts = dateString.split("-").map(Number);
+  return new Date(parts[0], parts[1] - 1, parts[2]);
+}
+
+getDaysBetween(fromDateString, toDateString) {
+  const fromDate = this.getDateOnly(fromDateString);
+  const toDate = this.getDateOnly(toDateString);
+
+  const diffMs = toDate.getTime() - fromDate.getTime();
+  return Math.floor(diffMs / (1000 * 60 * 60 * 24));
+}
+
+getDueReviewDay(unitNumber) {
+  const unitKey = String(unitNumber);
+  const progress = this.unitProgress[unitKey];
+
+  if (!progress || !progress.completedAt) {
+    return null;
+  }
+
+  if (!Array.isArray(progress.reviews)) {
+    progress.reviews = [];
+  }
+
+  const today = this.getTodayString();
+  const daysPassed = this.getDaysBetween(progress.completedAt, today);
+  const reviewDays = [1, 7, 30];
+
+  for (const reviewDay of reviewDays) {
+    if (daysPassed >= reviewDay && !progress.reviews.includes(reviewDay)) {
+      return reviewDay;
+    }
+  }
+
+  return null;
+}
+
+isUnitCompleted(unitNumber) {
+  const unitKey = String(unitNumber);
+  return Boolean(this.unitProgress[unitKey]?.completedAt);
 }
 
 loadUnitProgress() {
@@ -1156,30 +1225,42 @@ markCurrentUnitCompleted() {
   const unitKey = String(this.currentUnit);
   const today = this.getTodayString();
 
-  if (
-    this.unitProgress[unitKey] &&
-    this.unitProgress[unitKey].completedAt === today
-  ) {
-    console.log("このユニットは今日すでに完了保存済みです", this.unitProgress);
-    return;
-  }
-
   if (!this.unitProgress[unitKey]) {
     this.unitProgress[unitKey] = {
       completedAt: today,
-      reviewCount: 0
+      reviews: []
     };
-  } else {
-    this.unitProgress[unitKey].completedAt = today;
 
-    if (typeof this.unitProgress[unitKey].reviewCount !== "number") {
-      this.unitProgress[unitKey].reviewCount = 0;
-    }
+    this.saveUnitProgress();
+    console.log("新規ユニット完了を保存しました", this.unitProgress);
+    return;
   }
+
+  if (!Array.isArray(this.unitProgress[unitKey].reviews)) {
+    this.unitProgress[unitKey].reviews = [];
+  }
+
+  const dueReviewDay = this.getDueReviewDay(this.currentUnit);
+
+  if (dueReviewDay === null) {
+    console.log("このユニットは今日の復習対象ではありません", this.unitProgress);
+    return;
+  }
+
+  if (this.unitProgress[unitKey].reviews.includes(dueReviewDay)) {
+    console.log("この復習はすでに保存済みです", this.unitProgress);
+    return;
+  }
+
+  this.unitProgress[unitKey].reviews.push(dueReviewDay);
+  this.unitProgress[unitKey].lastReviewedAt = today;
 
   this.saveUnitProgress();
 
-  console.log("ユニット完了を保存しました", this.unitProgress);
+  console.log(
+    `ユニット${this.currentUnit}の${dueReviewDay}日後復習を保存しました`,
+    this.unitProgress
+  );
 }
 
   startRound() {
