@@ -132,9 +132,7 @@
   </div>
 </div>
   
-  <div id="unit-title" class="text-xl font-black text-amber-950">ユニット1</div>
-  <div id="unit-range" class="text-xs text-amber-700 mt-1">単語 1〜10</div>
-  <div id="unit-progress" class="text-sm text-orange-700 font-bold mt-2">きれいぱん 0/10</div>
+ 
 </div>
         <button onclick="app.startRound()" class="w-full bg-[#9C6644] hover:bg-[#7F5539] text-white text-lg font-bold py-4 px-6 rounded-2xl shadow-lg border-b-4 border-[#5C4033] btn-bounce flex items-center justify-center gap-2">
           <span>🥖</span> レッスンをはじめる（10問）
@@ -240,9 +238,17 @@
           </div>
         </div>
 
-        <button onclick="app.showStartScreen()" class="w-full bg-[#7F5539] text-white text-lg font-bold py-4 rounded-2xl shadow-lg border-b-4 border-[#5C4033] btn-bounce">
-          もういちど挑戦する 🍞
-        </button>
+        <button
+  id="btn-next-today-tray"
+  onclick="app.goToNextTodayTray()"
+  class="hidden w-full bg-orange-400 hover:bg-orange-500 text-white font-bold py-3 px-4 rounded-2xl shadow-md"
+>
+  次のパン焼きトレイへ
+</button>
+
+<button onclick="app.showStartScreen()" class="w-full bg-[#7F5539] text-white text-lg font-bold py-4 rounded-2xl shadow-lg border-b-4 border-[#5C4033] btn-bounce">
+  もういちど挑戦する 🍞
+</button>
       </div>
 
       <!-- 5. 単語図鑑・一覧画面 -->
@@ -817,7 +823,7 @@
   this.unitProgress = this.loadUnitProgress();
   this.currentUnit = 1;
   this.todayUnits = [];
-
+  this.todayUnitIndex = 0;
   this.words = [];
   this.currentRoundWords = [];
   this.currentQuestionIndex = 0;
@@ -856,8 +862,8 @@
   }
 
   this.todayUnits = this.decideTodayUnits();
-  this.currentUnit = this.todayUnits[0].unit;
-
+this.todayUnitIndex = 0;
+this.currentUnit = this.todayUnits[this.todayUnitIndex].unit;
   this.updateTotalProgressDisplay();
   this.showStartScreen();
 }
@@ -1927,12 +1933,46 @@ ${firstDiff + 1}文字目は、
   this.loadQuestion();
 }
 
+hasNextTodayTray() {
+  return Array.isArray(this.todayUnits) &&
+    this.todayUnitIndex < this.todayUnits.length - 1;
+}
+
+goToNextTodayTray() {
+  if (!this.hasNextTodayTray()) {
+    this.showStartScreen();
+    return;
+  }
+
+  this.todayUnitIndex++;
+  this.currentUnit = this.todayUnits[this.todayUnitIndex].unit;
+
+  this.score = 0;
+  this.currentQuestionIndex = 0;
+  this.currentRoundWords = [];
+  this.currentWord = null;
+  this.currentStage = 1;
+  this.roundLogs = [];
+
+  this.updateTodayTrayDisplay();
+  this.startRound();
+}
+
   showResultScreen() {
     this.markCurrentUnitCompleted();
     this.hideAllScreens();
 
     const screen = document.getElementById("screen-result");
     screen.classList.remove("hidden");
+    const nextTrayButton = document.getElementById("btn-next-today-tray");
+
+if (nextTrayButton) {
+  if (this.hasNextTodayTray()) {
+    nextTrayButton.classList.remove("hidden");
+  } else {
+    nextTrayButton.classList.add("hidden");
+  }
+}
 
     
 document.getElementById(
