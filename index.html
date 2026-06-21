@@ -122,6 +122,15 @@
 
         <div id="unit-status-card" class="bg-white/80 border border-amber-200 rounded-3xl p-4 mb-4 text-center shadow-sm">
   <div class="text-[11px] text-amber-600 font-bold">今日のパン焼きトレイ</div>
+
+  <div id="today-tray-list" class="mt-3 space-y-2">
+    <div class="rounded-2xl bg-amber-50 border border-amber-100 px-3 py-2">
+      <div class="text-lg font-black text-amber-900">ユニット1</div>
+      <div class="text-xs text-amber-700">単語 1〜10</div>
+      <div class="text-xs text-rose-500 font-bold">きれいぱん 0/10</div>
+    </div>
+  </div>
+</div>
   
   <div id="unit-title" class="text-xl font-black text-amber-950">ユニット1</div>
   <div id="unit-range" class="text-xs text-amber-700 mt-1">単語 1〜10</div>
@@ -807,6 +816,7 @@
   this.wordSetId = "jh1";
   this.unitProgress = this.loadUnitProgress();
   this.currentUnit = 1;
+  this.todayUnits = [];
 
   this.words = [];
   this.currentRoundWords = [];
@@ -845,7 +855,8 @@
     this.resetToDefault();
   }
 
-  this.currentUnit = this.decideTodayUnit();
+  this.todayUnits = this.decideTodayUnits();
+  this.currentUnit = this.todayUnits[0].unit;
 
   this.updateTotalProgressDisplay();
   this.showStartScreen();
@@ -1079,12 +1090,51 @@ if (footerStatus) {
     document.getElementById("screen-result").classList.add("hidden");
     document.getElementById("screen-wordlist").classList.add("hidden");
   }
+updateTodayTrayDisplay() {
+  const trayList = document.getElementById("today-tray-list");
 
+  if (!trayList) {
+    return;
+  }
+
+  if (!Array.isArray(this.todayUnits) || this.todayUnits.length === 0) {
+    trayList.innerHTML = `
+      <div class="rounded-2xl bg-amber-50 border border-amber-100 px-3 py-2">
+        <div class="text-lg font-black text-amber-900">ユニット${this.currentUnit}</div>
+        <div class="text-xs text-amber-700">単語 ${this.getUnitRangeText()}</div>
+        <div class="text-xs text-rose-500 font-bold">今日のパンを焼こう</div>
+      </div>
+    `;
+    return;
+  }
+
+  trayList.innerHTML = this.todayUnits.map(todayUnit => {
+    const unit = todayUnit.unit;
+    const rangeText = this.getUnitRangeTextByUnit(unit);
+    const cleanCount = this.getCleanCountByUnit(unit);
+    const wordCount = this.getUnitWordCountByUnit(unit);
+    const label = this.getTodayUnitLabel(todayUnit);
+
+    return `
+      <div class="rounded-2xl bg-amber-50 border border-amber-100 px-3 py-2">
+        <div class="flex items-center justify-center gap-2">
+          <div class="text-lg font-black text-amber-900">ユニット${unit}</div>
+          <div class="text-[10px] px-2 py-1 rounded-full bg-orange-100 text-orange-700 font-bold">${label}</div>
+        </div>
+        <div class="text-xs text-amber-700">単語 ${rangeText}</div>
+        <div class="text-xs text-rose-500 font-bold">きれいぱん ${cleanCount}/${wordCount}</div>
+      </div>
+    `;
+  }).join("");
+}
+ 
   showStartScreen() {
+
   this.hideAllScreens();
   this.updateTotalProgressDisplay();
   this.updateUnitStatusDisplay();
   document.getElementById("screen-start").classList.remove("hidden");
+  this.updateTodayTrayDisplay();
 }
 getMaxUnit() {
   return Math.max(1, Math.ceil(this.words.length / this.unitSize));
@@ -1113,10 +1163,102 @@ decideTodayUnit() {
   return maxUnit;
 }
 
+decideTodayUnits() {
+  const maxUnit = this.getMaxUnit();
+  const todayUnits = [];
+
+  for (let unit = 1; unit <= maxUnit; unit++) {
+    const dueReviewDay = this.getDueReviewDay(unit);
+
+    if (dueReviewDay !== null) {
+      todayUnits.push({
+        unit: unit,
+        type: "review",
+        reviewDay: dueReviewDay
+      });
+    }
+  }
+
+  if (todayUnits.length > 0) {
+    console.log("今日の復習ユニット一覧", todayUnits);
+    return todayUnits;
+  }
+
+  for (let unit = 1; unit <= maxUnit; unit++) {
+    if (!this.isUnitCompleted(unit)) {
+      const newUnit = [
+        {
+          unit: unit,
+          type: "new",
+          reviewDay: null
+        }
+      ];
+
+      console.log("今日の新規ユニット", newUnit);
+      return newUnit;
+    }
+  }
+
+  const finalUnit = [
+    {
+      unit: maxUnit,
+      type: "complete",
+      reviewDay: null
+    }
+  ];
+
+  console.log("すべてのユニットが完了しています", finalUnit);
+  return finalUnit;
+}
+
 getUnitRangeText() {
   const unitStart = (this.currentUnit - 1) * this.unitSize + 1;
   const unitEnd = Math.min(unitStart + this.unitSize - 1, this.words.length);
   return `${unitStart}〜${unitEnd}`;
+}
+
+getUnitRangeTextByUnit(unitNumber) {
+  const unitStart = (unitNumber - 1) * this.unitSize + 1;
+  const unitEnd = Math.min(unitStart + this.unitSize - 1, this.words.length);
+  return `${unitStart}〜${unitEnd}`;
+}
+
+getCleanCountByUnit(unitNumber) {
+  const unitStart = (unitNumber - 1) * this.unitSize + 1;
+  const unitEnd = unitStart + this.unitSize - 1;
+
+  const unitWords = this.words.filter(word => {
+    return word.id >= unitStart && word.id <= unitEnd;
+  });
+
+  return unitWords.filter(word => {
+    return (word.s3Correct || 0) >= 1;
+  }).length;
+}
+
+getUnitWordCountByUnit(unitNumber) {
+  const unitStart = (unitNumber - 1) * this.unitSize + 1;
+  const unitEnd = unitStart + this.unitSize - 1;
+
+  return this.words.filter(word => {
+    return word.id >= unitStart && word.id <= unitEnd;
+  }).length;
+}
+
+getTodayUnitLabel(todayUnit) {
+  if (todayUnit.type === "review") {
+    return `${todayUnit.reviewDay}日後復習`;
+  }
+
+  if (todayUnit.type === "new") {
+    return "新しいパン";
+  }
+
+  if (todayUnit.type === "complete") {
+    return "全ユニット完了";
+  }
+
+  return "今日のパン";
 }
 
 getUnitProgressKey() {
