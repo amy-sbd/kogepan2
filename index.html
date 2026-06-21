@@ -807,6 +807,7 @@
     this.maxCombo = 0;
     this.currentUnit = 1;
     this.unitSize = 10;
+    this.wordSetId = "jh1";
     this.unitProgress = this.loadUnitProgress();
     this.words = [];
     this.currentRoundWords = [];
@@ -1094,6 +1095,10 @@ getUnitRangeText() {
   return `${unitStart}〜${unitEnd}`;
 }
 
+getUnitProgressKey() {
+  return `kogepanUnitProgress_${this.wordSetId}_V1`;
+}
+
 getTodayString() {
   const now = new Date();
   const year = now.getFullYear();
@@ -1119,7 +1124,7 @@ loadUnitProgress() {
 
 saveUnitProgress() {
   localStorage.setItem(
-    "kogepanUnitProgressV1",
+    this.getUnitProgressKey(),
     JSON.stringify(this.unitProgress)
   );
 }
