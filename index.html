@@ -120,6 +120,12 @@
           <p id="total-progress-text" class="text-xs text-amber-900">ロード中...</p>
         </div>
 
+        <div id="unit-status-card" class="bg-white/80 border border-amber-200 rounded-3xl p-4 mb-4 text-center shadow-sm">
+  <div class="text-[11px] text-amber-600 font-bold">今日のパン焼きトレイ</div>
+  <div id="unit-title" class="text-xl font-black text-amber-950">ユニット1</div>
+  <div id="unit-range" class="text-xs text-amber-700 mt-1">単語 1〜10</div>
+  <div id="unit-progress" class="text-sm text-orange-700 font-bold mt-2">きれいぱん 0/10</div>
+</div>
         <button onclick="app.startRound()" class="w-full bg-[#9C6644] hover:bg-[#7F5539] text-white text-lg font-bold py-4 px-6 rounded-2xl shadow-lg border-b-4 border-[#5C4033] btn-bounce flex items-center justify-center gap-2">
           <span>🥖</span> レッスンをはじめる（10問）
         </button>
@@ -1071,10 +1077,11 @@ if (footerStatus) {
   }
 
   showStartScreen() {
-    this.hideAllScreens();
-    this.updateTotalProgressDisplay();
-    document.getElementById("screen-start").classList.remove("hidden");
-  }
+  this.hideAllScreens();
+  this.updateTotalProgressDisplay();
+  this.updateUnitStatusDisplay();
+  document.getElementById("screen-start").classList.remove("hidden");
+}
 
   startRound() {
   const unitStart = (this.currentUnit - 1) * this.unitSize + 1;
@@ -1082,45 +1089,59 @@ if (footerStatus) {
 
   const unitWords = this.words.filter(w => w.id >= unitStart && w.id <= unitEnd);
 
-  let availableWords = [...unitWords];
+  let availableWords = unitWords.filter(w => (w.s3Correct || 0) < 1);
 
-  if (availableWords.length === 0) {
+  if (unitWords.length === 0) {
     availableWords = [...this.words];
     this.showToast("このユニットに単語が見つからないので、全体から出すよ！");
+  } else if (availableWords.length === 0) {
+    availableWords = [...unitWords];
+    this.showToast(`ユニット${this.currentUnit}は全部きれいぱん！この10語を復習するよ！`);
   }
-    const weightedWords = availableWords.map(w => {
-  let weight = 1;
 
-  weight += (w.wrongCount || 0) * 4;
+  const weightedWords = availableWords.map(w => {
+    let weight = 1;
 
-  // まだ意味チェックができていない単語
-  if ((w.s1Correct || 0) < 1) weight += 3;
+    weight += (w.wrongCount || 0) * 4;
 
-  // 意味はOK、まだキレイパンではない単語
-  if ((w.s1Correct || 0) >= 1 && (w.s3Correct || 0) < 1) weight += 6;
-      const daysPassed = w.lastAnsweredAt
-        ? (Date.now() - w.lastAnsweredAt) / (1000 * 60 * 60 * 24)
-        : 7;
+    // まだ意味チェックができていない単語
+    if ((w.s1Correct || 0) < 1) weight += 3;
 
-      if (daysPassed >= 7) weight += 4;
-      else if (daysPassed >= 3) weight += 2;
-      else if (daysPassed >= 1) weight += 1;
+    // 意味はOK、まだキレイパンではない単語
+    if ((w.s1Correct || 0) >= 1 && (w.s3Correct || 0) < 1) weight += 6;
 
-      return { word: w, weight };
-    });
+    const daysPassed = w.lastAnsweredAt
+      ? (Date.now() - w.lastAnsweredAt) / (1000 * 60 * 60 * 24)
+      : 7;
 
-    this.currentRoundWords = this.pickWeightedWords(weightedWords, 10);
-    this.currentQuestionIndex = 0;
-this.score = 0;
-this.comboCount = 0;
-this.maxCombo = 0;
-this.roundLogs = [];
+    if (daysPassed >= 7) weight += 4;
+    else if (daysPassed >= 3) weight += 2;
+    else if (daysPassed >= 1) weight += 1;
 
-    this.hideAllScreens();
-    document.getElementById("screen-quiz").classList.remove("hidden");
+    return { word: w, weight };
+  });
 
-    this.loadQuestion();
+  this.currentRoundWords = [];
+
+  while (this.currentRoundWords.length < 10 && weightedWords.length > 0) {
+    const picked = this.pickWeightedWords(weightedWords, 1)[0];
+
+    if (picked) {
+      this.currentRoundWords.push(picked);
+    }
   }
+
+  this.currentQuestionIndex = 0;
+  this.score = 0;
+  this.comboCount = 0;
+  this.maxCombo = 0;
+  this.roundLogs = [];
+
+  this.hideAllScreens();
+  document.getElementById("screen-quiz").classList.remove("hidden");
+
+  this.loadQuestion();
+}
 
   pickWeightedWords(weightedWords, count) {
     const selected = [];
@@ -1558,16 +1579,28 @@ ${firstDiff + 1}文字目は、
     }
   }
 }  nextQuestion() {
-    this.currentQuestionIndex++;
+  const unitStart = (this.currentUnit - 1) * this.unitSize + 1;
+  const unitEnd = unitStart + this.unitSize - 1;
 
-    if (this.currentQuestionIndex < this.currentRoundWords.length) {
-      this.hideAllScreens();
-      document.getElementById("screen-quiz").classList.remove("hidden");
-      this.loadQuestion();
-    } else {
-      this.showResultScreen();
-    }
+  const unfinishedWords = this.words.filter(
+    w => w.id >= unitStart && w.id <= unitEnd && (w.s3Correct || 0) < 1
+  );
+
+  if (unfinishedWords.length === 0) {
+    this.showResultScreen();
+    return;
   }
+
+  this.currentQuestionIndex++;
+
+  if (this.currentQuestionIndex < this.currentRoundWords.length) {
+    this.hideAllScreens();
+    document.getElementById("screen-quiz").classList.remove("hidden");
+    this.loadQuestion();
+  } else {
+    this.showResultScreen();
+  }
+}
 
   showResultScreen() {
     this.hideAllScreens();
@@ -1659,7 +1692,24 @@ document.getElementById(
       listEl.appendChild(item);
     });
   }
+updateUnitStatusDisplay() {
+  const unitTitle = document.getElementById("unit-title");
+  const unitRange = document.getElementById("unit-range");
+  const unitProgress = document.getElementById("unit-progress");
 
+  if (!unitTitle || !unitRange || !unitProgress) return;
+
+  const unitStart = (this.currentUnit - 1) * this.unitSize + 1;
+  const unitEnd = unitStart + this.unitSize - 1;
+
+  const unitWords = this.words.filter(w => w.id >= unitStart && w.id <= unitEnd);
+  const cleanCount = unitWords.filter(w => (w.s3Correct || 0) >= 1).length;
+
+  unitTitle.innerText = `ユニット${this.currentUnit}`;
+  unitRange.innerText = `単語 ${unitStart}〜${unitEnd}`;
+  unitProgress.innerText = `きれいぱん ${cleanCount}/${unitWords.length}`;
+}
+ 
   showWordList() {
     this.hideAllScreens();
     document.getElementById("screen-wordlist").classList.remove("hidden");
