@@ -122,6 +122,7 @@
 
         <div id="unit-status-card" class="bg-white/80 border border-amber-200 rounded-3xl p-4 mb-4 text-center shadow-sm">
   <div class="text-[11px] text-amber-600 font-bold">今日のパン焼きトレイ</div>
+  
   <div id="unit-title" class="text-xl font-black text-amber-950">ユニット1</div>
   <div id="unit-range" class="text-xs text-amber-700 mt-1">単語 1〜10</div>
   <div id="unit-progress" class="text-sm text-orange-700 font-bold mt-2">きれいぱん 0/10</div>
@@ -806,6 +807,7 @@
     this.maxCombo = 0;
     this.currentUnit = 1;
     this.unitSize = 10;
+    this.unitProgress = this.loadUnitProgress();
     this.words = [];
     this.currentRoundWords = [];
     this.currentQuestionIndex = 0;
@@ -1081,6 +1083,100 @@ if (footerStatus) {
   this.updateTotalProgressDisplay();
   this.updateUnitStatusDisplay();
   document.getElementById("screen-start").classList.remove("hidden");
+}
+getMaxUnit() {
+  return Math.max(1, Math.ceil(this.words.length / this.unitSize));
+}
+
+getUnitRangeText() {
+  const unitStart = (this.currentUnit - 1) * this.unitSize + 1;
+  const unitEnd = Math.min(unitStart + this.unitSize - 1, this.words.length);
+  return `${unitStart}〜${unitEnd}`;
+}
+
+getTodayString() {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const day = String(now.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+loadUnitProgress() {
+  const saved = localStorage.getItem("kogepanUnitProgressV1");
+
+  if (!saved) {
+    return {};
+  }
+
+  try {
+    return JSON.parse(saved);
+  } catch (error) {
+    console.warn("ユニット進捗の読み込みに失敗しました", error);
+    return {};
+  }
+}
+
+saveUnitProgress() {
+  localStorage.setItem(
+    "kogepanUnitProgressV1",
+    JSON.stringify(this.unitProgress)
+  );
+}
+
+getCurrentUnitWords() {
+  const unitStart = (this.currentUnit - 1) * this.unitSize + 1;
+  const unitEnd = unitStart + this.unitSize - 1;
+
+  return this.words.filter(word => {
+    return word.id >= unitStart && word.id <= unitEnd;
+  });
+}
+
+isCurrentUnitComplete() {
+  const unitWords = this.getCurrentUnitWords();
+
+  if (unitWords.length === 0) {
+    return false;
+  }
+
+  return unitWords.every(word => {
+    return word.s3Correct >= 1;
+  });
+}
+
+markCurrentUnitCompleted() {
+  if (!this.isCurrentUnitComplete()) {
+    return;
+  }
+
+  const unitKey = String(this.currentUnit);
+  const today = this.getTodayString();
+
+  if (
+    this.unitProgress[unitKey] &&
+    this.unitProgress[unitKey].completedAt === today
+  ) {
+    console.log("このユニットは今日すでに完了保存済みです", this.unitProgress);
+    return;
+  }
+
+  if (!this.unitProgress[unitKey]) {
+    this.unitProgress[unitKey] = {
+      completedAt: today,
+      reviewCount: 0
+    };
+  } else {
+    this.unitProgress[unitKey].completedAt = today;
+
+    if (typeof this.unitProgress[unitKey].reviewCount !== "number") {
+      this.unitProgress[unitKey].reviewCount = 0;
+    }
+  }
+
+  this.saveUnitProgress();
+
+  console.log("ユニット完了を保存しました", this.unitProgress);
 }
 
   startRound() {
@@ -1603,6 +1699,7 @@ ${firstDiff + 1}文字目は、
 }
 
   showResultScreen() {
+    this.markCurrentUnitCompleted();
     this.hideAllScreens();
 
     const screen = document.getElementById("screen-result");
