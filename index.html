@@ -1039,7 +1039,7 @@
     const footerStatus = document.getElementById("footer-character-status");
 
 if (footerStatus) {
-  const cleanPanCount = this.words.filter(w => (w.s3Correct || 0) >= 3).length;
+  const cleanPanCount = this.words.filter(w => (w.s3Correct || 0) >= 1).length;
 
   if (cleanPanCount === 0) {
     footerStatus.innerText =
@@ -1202,19 +1202,16 @@ this.roundLogs = [];
     let statusText = "";
     let color = "";
 
-    if (s3 >= 3) {
-      statusText = "✨ 極上のきれいぱん！";
-      color = "text-amber-600";
-    } else if (s2 >= 2) {
-      statusText = `🥖 スペル修行中 S3連続${st3}/3`;
-      color = "text-orange-500";
-    } else if (s1 >= 2) {
-      statusText = `🥚 意味確認中 S2連続${st2}/2`;
-      color = "text-yellow-600";
-    } else {
-      statusText = `💀 タネ焼き中 S1連続${st1}/2`;
-      color = "text-stone-500";
-    }
+   if (s3 >= 1) {
+  statusText = "✨ きれいぱん完成！";
+  color = "text-amber-600";
+} else if (s1 >= 1) {
+  statusText = `🥖 スペル練習中 ${st3}/1`;
+  color = "text-orange-500";
+} else {
+  statusText = `🥚 意味チェック中 ${st1}/1`;
+  color = "text-stone-500";
+}
 
     const infoSpan = document.createElement("span");
     infoSpan.className = `font-bold ${color}`;
@@ -1340,7 +1337,7 @@ while (distractors.length < 3) {
         word.s3Streak = (word.s3Streak || 0) + 1;
         word.wrongCount = Math.max(0, (word.wrongCount || 0) - 1);
 
-        if (word.s3Streak >= 3) {
+        if (word.s3Streak >= 1) {
   isStageUp = true;
   this.showGraduation(word);
 }
@@ -1674,7 +1671,7 @@ document.getElementById(
   const s3 = Math.min(w.s3Correct || 0, 3);
   const wrong = w.wrongCount || 0;
 
-  if (s3 >= 3) {
+  if (s3 >= 1) {
     return {
       key: "perfect",
       label: "🥐 きれいぱん",
@@ -1689,15 +1686,6 @@ document.getElementById(
       label: "🔥 こげ注意",
       className: "bg-red-100 text-red-700 border-red-200",
       comment: "ゆっくり焼き直そう"
-    };
-  }
-
-  if (s3 > 0) {
-    return {
-      key: "spelling",
-      label: "🥖 スペル練習中",
-      className: "bg-orange-100 text-orange-700 border-orange-200",
-      comment: "きれいぱんまであと少し"
     };
   }
 
@@ -1717,7 +1705,6 @@ document.getElementById(
     comment: "まずは意味チェックから"
   };
 };
-
 const counts = {
   perfect: 0,
   spelling: 0,
@@ -1788,7 +1775,7 @@ summaryCard.innerHTML = `
  if (type === "all") filtered = this.words;
 if (type === "stage1") filtered = this.words.filter(w => (w.s1Correct || 0) >= 1 && (w.s3Correct || 0) === 0);
 if (type === "stage2") filtered = this.words.filter(w => (w.s3Correct || 0) > 0 && (w.s3Correct || 0) < 3);
-if (type === "stage3") filtered = this.words.filter(w => (w.s3Correct || 0) >= 3);
+if (type === "stage3") filtered = this.words.filter(w => (w.s3Correct || 0) >= 1);
   filtered.forEach(w => {
   const card = document.createElement("div");
 
