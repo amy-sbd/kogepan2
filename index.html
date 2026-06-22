@@ -217,9 +217,9 @@
       <!-- 4. ラウンド終了リザルト画面 -->
       <div id="screen-result" class="hidden flex-col items-center py-6 space-y-6">
         <div class="text-center">
-          <h2 class="text-2xl font-bold text-amber-950">おつかれさま！</h2>
-          <p class="text-sm text-amber-600">本日の焼き上がり結果発表！</p>
-        </div>
+  <h2 id="result-title" class="text-2xl font-bold text-amber-950">おつかれさま！</h2>
+  <p id="result-subtitle" class="text-sm text-amber-600">本日の焼き上がり結果発表！</p>
+</div>
 
         <!-- 焼き上がり結果のパンかご -->
         <div class="bg-amber-100/50 p-4 rounded-2xl border border-amber-200 w-full text-center space-y-3">
@@ -1983,6 +1983,12 @@ hasNextTodayTray() {
     this.todayUnitIndex < this.todayUnits.length - 1;
 }
 
+isLastTodayTray() {
+  return Array.isArray(this.todayUnits) &&
+    this.todayUnits.length > 0 &&
+    this.todayUnitIndex >= this.todayUnits.length - 1;
+}
+
 goToNextTodayTray() {
   if (!this.hasNextTodayTray()) {
     this.showStartScreen();
@@ -2045,7 +2051,18 @@ if (nextTrayButton) {
   }
 }
 
+const resultTitle = document.getElementById("result-title");
+const resultSubtitle = document.getElementById("result-subtitle");
 
+if (resultTitle && resultSubtitle) {
+  if (this.isLastTodayTray()) {
+    resultTitle.textContent = "今日のパン焼き完了！";
+    resultSubtitle.textContent = "また明日、復習しようね 🍞";
+  } else {
+    resultTitle.textContent = "おつかれさま！";
+    resultSubtitle.textContent = "次のパン焼きトレイもあるよ";
+  }
+}
     
 document.getElementById(
   "result-score-text"
