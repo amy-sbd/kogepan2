@@ -1,0 +1,8 @@
+{
+  "name": "こげぱんの英単語ベーカリー",
+  "short_name": "こげぱん英語",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#FDFBF7",
+  "theme_color": "#7F5539"
+}
