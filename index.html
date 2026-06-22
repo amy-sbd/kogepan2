@@ -817,7 +817,7 @@
     ];
 
    class KogePanEnglishApp {
-  constructor() {
+ constructor() {
   this.unitSize = 10;
   this.wordSetId = "jh1";
   this.unitProgress = this.loadUnitProgress();
@@ -825,6 +825,12 @@
   this.todayUnits = [];
   this.todayUnitIndex = 0;
   this.todayTrayDoneIds = new Set();
+
+  // 今日のパン焼きは軽めに終われるようにする
+  this.dailyCleanGoal = 5;
+  this.dailyQuestionLimit = 15;
+  this.todayCleanCountAtStart = 0;
+
   this.words = [];
   this.currentRoundWords = [];
   this.currentQuestionIndex = 0;
@@ -1185,6 +1191,7 @@ decideTodayUnits() {
   const maxUnit = this.getMaxUnit();
   const todayUnits = [];
 
+  // まず、復習日が来ているユニットを優先する
   for (let unit = 1; unit <= maxUnit; unit++) {
     const dueReviewDay = this.getDueReviewDay(unit);
 
@@ -1202,18 +1209,24 @@ decideTodayUnits() {
     return todayUnits;
   }
 
+  // 復習がなければ、まだ全部きれいぱんになっていないユニットを進める
   for (let unit = 1; unit <= maxUnit; unit++) {
     if (!this.isUnitCompleted(unit)) {
-      const newUnit = [
+      const cleanCount = this.getCleanCountByUnit(unit);
+      const wordCount = this.getUnitWordCountByUnit(unit);
+
+      const unitType = cleanCount > 0 ? "continue" : "new";
+
+      const nextUnit = [
         {
           unit: unit,
-          type: "new",
+          type: unitType,
           reviewDay: null
         }
       ];
 
-      console.log("今日の新規ユニット", newUnit);
-      return newUnit;
+      console.log("今日進めるユニット", nextUnit);
+      return nextUnit;
     }
   }
 
@@ -1228,7 +1241,6 @@ decideTodayUnits() {
   console.log("すべてのユニットが完了しています", finalUnit);
   return finalUnit;
 }
-
 getUnitRangeText() {
   const unitStart = (this.currentUnit - 1) * this.unitSize + 1;
   const unitEnd = Math.min(unitStart + this.unitSize - 1, this.words.length);
@@ -1272,13 +1284,16 @@ getTodayUnitLabel(todayUnit) {
     return "新しいパン";
   }
 
+  if (todayUnit.type === "continue") {
+    return "つづきのパン";
+  }
+
   if (todayUnit.type === "complete") {
     return "全ユニット完了";
   }
 
   return "今日のパン";
 }
-
 getUnitProgressKey() {
   return `kogepanUnitProgress_${this.wordSetId}_V1`;
 }
@@ -1316,7 +1331,12 @@ getDueReviewDay(unitNumber) {
     progress.reviews = [];
   }
 
-  const today = this.getTodayString();
+  // 古い保存データで "1" のような文字列になっていても、数字にそろえる
+  progress.reviews = progress.reviews
+  .map(review => Number(review))
+  .filter(review => [1, 7, 30].includes(review));
+
+const today = this.getTodayString();
   const daysPassed = this.getDaysBetween(progress.completedAt, today);
   const reviewDays = [1, 7, 30];
 
@@ -1335,7 +1355,7 @@ isUnitCompleted(unitNumber) {
 }
 
 loadUnitProgress() {
-  const saved = localStorage.getItem("kogepanUnitProgressV1");
+  const saved = localStorage.getItem(this.getUnitProgressKey());
 
   if (!saved) {
     return {};
@@ -1425,23 +1445,37 @@ isCurrentUnitComplete() {
 }
 
 markCurrentUnitCompleted() {
-  if (!this.isCurrentTrayComplete()) {
-    return;
+  const todayUnit = this.getCurrentTodayUnit();
+
+  if (todayUnit && todayUnit.type === "review") {
+    if (!this.isCurrentTrayComplete()) {
+      return;
+    }
+  } else {
+    const cleanCount = this.getCleanCountByUnit(this.currentUnit);
+    const wordCount = this.getUnitWordCountByUnit(this.currentUnit);
+
+    if (wordCount === 0 || cleanCount < wordCount) {
+      return;
+    }
   }
 
   const unitKey = String(this.currentUnit);
   const today = this.getTodayString();
 
-  if (!this.unitProgress[unitKey]) {
-    this.unitProgress[unitKey] = {
-      completedAt: today,
-      reviews: []
-    };
+ if (!this.unitProgress[unitKey] || !this.unitProgress[unitKey].completedAt) {
+  this.unitProgress[unitKey] = {
+    ...this.unitProgress[unitKey],
+    completedAt: today,
+    reviews: Array.isArray(this.unitProgress[unitKey]?.reviews)
+      ? this.unitProgress[unitKey].reviews
+      : []
+  };
 
-    this.saveUnitProgress();
-    console.log("新規ユニット完了を保存しました", this.unitProgress);
-    return;
-  }
+  this.saveUnitProgress();
+  console.log("新規ユニット完了を保存しました", this.unitProgress);
+  return;
+}
 
   if (!Array.isArray(this.unitProgress[unitKey].reviews)) {
     this.unitProgress[unitKey].reviews = [];
@@ -1476,7 +1510,11 @@ markCurrentUnitCompleted() {
 
   const unitWords = this.words.filter(w => w.id >= unitStart && w.id <= unitEnd);
 
-  let availableWords = this.getCurrentTrayUnfinishedWords();
+this.todayCleanCountAtStart = unitWords.filter(w => {
+  return (w.s3Correct || 0) >= 1;
+}).length;
+
+let availableWords = this.getCurrentTrayUnfinishedWords();
 
   if (unitWords.length === 0) {
     availableWords = [...this.words];
@@ -1510,7 +1548,7 @@ markCurrentUnitCompleted() {
 
   this.currentRoundWords = [];
 
-  while (this.currentRoundWords.length < 10 && weightedWords.length > 0) {
+  while (this.currentRoundWords.length < this.dailyQuestionLimit && weightedWords.length > 0) {
     const picked = this.pickWeightedWords(weightedWords, 1)[0];
 
     if (picked) {
@@ -1922,6 +1960,28 @@ ${firstDiff + 1}文字目は、
   const unitStart = (this.currentUnit - 1) * this.unitSize + 1;
   const unitEnd = unitStart + this.unitSize - 1;
 
+  const unitWords = this.words.filter(w => {
+    return w.id >= unitStart && w.id <= unitEnd;
+  });
+
+  const currentCleanCount = unitWords.filter(w => {
+    return (w.s3Correct || 0) >= 1;
+  }).length;
+
+  const todayNewCleanCount = currentCleanCount - this.todayCleanCountAtStart;
+
+  if (todayNewCleanCount >= this.dailyCleanGoal) {
+    this.showToast("今日はきれいぱん5個できたよ！ここまでにしよう 🍞");
+    this.showResultScreen();
+    return;
+  }
+
+  if (this.roundLogs.length >= this.dailyQuestionLimit) {
+  this.showToast("今日は15問がんばったよ！ここまでにしよう 🍞");
+  this.showResultScreen();
+  return;
+}
+
   const unfinishedWords = this.getCurrentTrayUnfinishedWords();
 
   if (unfinishedWords.length === 0) {
@@ -2053,15 +2113,42 @@ const resultTitle = document.getElementById("result-title");
 const resultSubtitle = document.getElementById("result-subtitle");
 
 if (resultTitle && resultSubtitle) {
-  if (this.isLastTodayTray()) {
-    resultTitle.textContent = "今日のパン焼き完了！";
-    resultSubtitle.textContent = "また明日、復習しようね 🍞";
+  const isTrayComplete = this.isCurrentTrayComplete();
+  const reachedQuestionLimit = this.roundLogs.length >= this.dailyQuestionLimit;
+
+  const unitStart = (this.currentUnit - 1) * this.unitSize + 1;
+  const unitEnd = unitStart + this.unitSize - 1;
+
+  const unitWords = this.words.filter(w => {
+    return w.id >= unitStart && w.id <= unitEnd;
+  });
+
+  const currentCleanCount = unitWords.filter(w => {
+    return (w.s3Correct || 0) >= 1;
+  }).length;
+
+  const todayNewCleanCount = currentCleanCount - this.todayCleanCountAtStart;
+  const reachedCleanGoal = todayNewCleanCount >= this.dailyCleanGoal;
+
+  if (isTrayComplete) {
+    if (this.isLastTodayTray()) {
+      resultTitle.textContent = "今日のパン焼き完了！";
+      resultSubtitle.textContent = "ユニットのパンが全部きれいぱんになったよ 🍞";
+    } else {
+      resultTitle.textContent = "おつかれさま！";
+      resultSubtitle.textContent = "このトレイは完了！次のパン焼きトレイもあるよ";
+    }
+  } else if (reachedCleanGoal) {
+    resultTitle.textContent = "今日はここまで！";
+    resultSubtitle.textContent = `きれいぱんが${this.dailyCleanGoal}個できたよ。残りは次回また焼こう 🥐`;
+  } else if (reachedQuestionLimit) {
+    resultTitle.textContent = "今日はここまで！";
+    resultSubtitle.textContent = `${this.dailyQuestionLimit}問がんばったよ。残りは次回また焼こう 🍞`;
   } else {
-    resultTitle.textContent = "おつかれさま！";
-    resultSubtitle.textContent = "次のパン焼きトレイもあるよ";
+    resultTitle.textContent = "今日はここまで！";
+    resultSubtitle.textContent = "残りのパンは、次回また焼こう 🍞";
   }
-}
-    
+}    
 document.getElementById(
   "result-score-text"
 ).innerHTML =
