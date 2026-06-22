@@ -147,7 +147,7 @@
       <div id="screen-quiz" class="hidden flex-col space-y-4">
         <!-- 進捗メーター -->
         <div class="flex justify-between items-center text-xs px-1">
-          <span id="quiz-question-number" class="font-bold bg-amber-200 text-amber-900 px-3 py-1 rounded-full">第 1 / 10 問</span>
+          <span id="quiz-question-number" class="font-bold bg-amber-200 text-amber-900 px-3 py-1 rounded-full">きれいぱんまで あと10こ</span>
           <span id="quiz-current-stage" class="font-bold text-amber-700 bg-amber-100 px-3 py-1 rounded-full text-center">ステージ 1：日本語 ➔ 英語</span>
         </div>
 
@@ -1550,12 +1550,11 @@ markCurrentUnitCompleted() {
     this.currentStage = 3;
   }
 
-    document.getElementById("quiz-question-number").innerText =
-      `第 ${this.currentQuestionIndex + 1} / ${this.currentRoundWords.length} 問`;
+    const remainingWords = this.getCurrentTrayUnfinishedWords().length;
+document.getElementById("quiz-question-number").textContent = `きれいぱんまで あと${remainingWords}こ`;
 
-    document.getElementById("quiz-part-of-speech").innerText =
-      `【${this.currentWord.part}】`;
-
+document.getElementById("quiz-part-of-speech").innerText =
+  `【${this.currentWord.part}】`;
     const stageTitle = document.getElementById("quiz-current-stage");
     const starContainer = document.getElementById("star-container");
     const promptEl = document.getElementById("quiz-question-prompt");
