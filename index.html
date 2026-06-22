@@ -232,7 +232,7 @@
 
         <!-- 今回の単語ステータス変化 -->
         <div class="w-full space-y-2">
-          <p class="text-xs font-bold text-amber-800">✨ 今回学習した単語の進み具合</p>
+          <p class="text-xs font-bold text-amber-800">✨ 今日焼いた単語</p>
           <div id="result-words-list" class="max-h-48 overflow-y-auto space-y-2 pr-1">
             <!-- 進捗リスト -->
           </div>
@@ -261,8 +261,8 @@
         </div>
 
         <p class="text-[11px] text-amber-600 leading-relaxed">
-          中学1年レベルの基本英単語です。すべての単語を「極上のきれいぱん（ステージ3クリア）」に焼き上げよう！
-        </p>
+  中学1年レベルの基本英単語です。意味をえらんで、最後はスペルまで書ける「きれいぱん」に焼き上げよう！
+</p>
 
         <!-- 図鑑フィルターボタン -->
         <div class="flex gap-1 text-xs justify-between overflow-x-auto pb-1">
@@ -891,28 +891,37 @@ this.currentUnit = this.todayUnits[this.todayUnitIndex].unit;
       const existing = this.words.find(ex => ex.id === w.id);
 
       if (existing) {
-        const s1Correct = existing.s1Correct || 0;
-        const s2Correct = existing.s2Correct || 0;
-        const s3Correct = existing.s3Correct || 0;
+  const s1Correct = existing.s1Correct || 0;
+  let s2Correct = existing.s2Correct || 0;
+  const s3Correct = existing.s3Correct || 0;
 
-        let unlockedStage = existing.unlockedStage || 1;
-        if (s1Correct >= 2) unlockedStage = 2;
-        if (s2Correct >= 2) unlockedStage = 3;
+  let s1Streak = existing.s1Streak || 0;
+  let s2Streak = existing.s2Streak || 0;
+  const s3Streak = existing.s3Streak || 0;
 
-        return {
-          ...w,
-          s1Correct,
-          s2Correct,
-          s3Correct,
-          s1Streak: existing.s1Streak || 0,
-          s2Streak: existing.s2Streak || 0,
-          s3Streak: existing.s3Streak || 0,
-          wrongCount: existing.wrongCount || 0,
-          lastAnsweredAt: existing.lastAnsweredAt || 0,
-          unlockedStage
-        };
-      }
+  let unlockedStage = 1;
 
+  if (s1Correct >= 1) {
+    unlockedStage = 3;
+
+    // 使わない中間ステージは通過済みにして、スペルへ進める
+    s2Correct = 2;
+    s2Streak = 2;
+  }
+
+  return {
+    ...w,
+    s1Correct,
+    s2Correct,
+    s3Correct,
+    s1Streak,
+    s2Streak,
+    s3Streak,
+    wrongCount: existing.wrongCount || 0,
+    lastAnsweredAt: existing.lastAnsweredAt || 0,
+    unlockedStage
+  };
+}
       return {
         ...w,
         s1Correct: 0,
@@ -975,13 +984,15 @@ this.currentUnit = this.todayUnits[this.todayUnitIndex].unit;
           w.wrongCount = found[7] || 0;
           w.lastAnsweredAt = found[8] || 0;
 
-          if (w.s2Correct >= 2) {
-            w.unlockedStage = 3;
-          } else if (w.s1Correct >= 2) {
-            w.unlockedStage = 2;
-          } else {
-            w.unlockedStage = 1;
-          }
+if ((w.s1Correct || 0) >= 1) {
+  w.unlockedStage = 3;
+
+  // 使わない中間ステージは通過済みにして、スペルへ進める
+  w.s2Correct = 2;
+  w.s2Streak = 2;
+} else {
+  w.unlockedStage = 1;
+}
         }
       });
 
@@ -1701,7 +1712,9 @@ while (distractors.length < 3) {
   if (word.s1Streak >= 1) {
     word.unlockedStage = 3;
 
-    // 英訳ステージは使わないので、内部的にはクリア扱いにする
+    // // 使わない中間ステージは通過済みにして、スペルへ進める
+word.s2Correct = 2;
+word.s2Streak = 2;
     word.s2Correct = 2;
     word.s2Streak = 2;
 
@@ -1709,16 +1722,7 @@ while (distractors.length < 3) {
   }
 }
 
-      if (this.currentStage === 2) {
-        word.s2Correct = (word.s2Correct || 0) + 1;
-        word.s2Streak = (word.s2Streak || 0) + 1;
-        word.wrongCount = Math.max(0, (word.wrongCount || 0) - 1);
-
-        if (word.s2Streak >= 2) {
-          word.unlockedStage = 3;
-          isStageUp = true;
-        }
-      }
+      
 
       if (this.currentStage === 3) {
         word.s3Correct = (word.s3Correct || 0) + 1;
@@ -1739,11 +1743,6 @@ while (distractors.length < 3) {
         word.s1Streak = 0;
       }
 
-      if (this.currentStage === 2) {
-        word.s2Streak = 0;
-        word.unlockedStage = 1;
-        isStageDown = true;
-      }
 
       if (this.currentStage === 3) {
   word.s1Correct = 0;
@@ -2262,21 +2261,33 @@ summaryCard.innerHTML = `
 `;
   container.appendChild(summaryCard);
 
-  let filtered = [];
+ let filtered = [];
 
- if (type === "all") filtered = this.words;
-if (type === "stage1") filtered = this.words.filter(w => (w.s1Correct || 0) >= 1 && (w.s3Correct || 0) === 0);
-if (type === "stage2") filtered = this.words.filter(w => (w.s1Correct || 0) >= 1 && (w.s3Correct || 0) < 1);
-if (type === "stage3") filtered = this.words.filter(w => (w.s3Correct || 0) >= 1);
-  filtered.forEach(w => {
+if (type === "all") {
+  filtered = this.words;
+}
+
+if (type === "stage2") {
+  filtered = this.words.filter(w => {
+    return (w.s1Correct || 0) >= 1 && (w.s3Correct || 0) < 1;
+  });
+}
+
+if (type === "stage3") {
+  filtered = this.words.filter(w => {
+    return (w.s3Correct || 0) >= 1;
+  });
+}
+
+filtered.forEach(w => {
   const card = document.createElement("div");
 
   const s1 = Math.min(w.s1Correct || 0, 1);
-const s3 = Math.min(w.s3Correct || 0, 3);
+  const s3 = Math.min(w.s3Correct || 0, 1);
   const status = getBakeStatus(w);
 
   let specialGraphic = "";
-
+  
   if (status.key === "perfect") {
     specialGraphic = `
       <div class="mt-3 bg-gradient-to-br from-yellow-50 via-amber-50 to-pink-50 border-2 border-yellow-300 rounded-3xl p-4 text-center shadow-inner">
