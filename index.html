@@ -1355,21 +1355,59 @@ isUnitCompleted(unitNumber) {
 }
 
 loadUnitProgress() {
-  const saved = localStorage.getItem(this.getUnitProgressKey());
+  const newKey = this.getUnitProgressKey();
+  const oldKey = "kogepanUnitProgressV1";
+
+  const savedNew = localStorage.getItem(newKey);
+  const savedOld = localStorage.getItem(oldKey);
+
+  const saved = savedNew || savedOld;
 
   if (!saved) {
     return {};
   }
 
   try {
-    return JSON.parse(saved);
+    const parsed = JSON.parse(saved);
+    const cleaned = this.cleanUnitProgressData(parsed);
+
+    // 古いキーから読んだ場合は、新しいキーへ移しておく
+    if (!savedNew && savedOld) {
+      localStorage.setItem(newKey, JSON.stringify(cleaned));
+    }
+
+    return cleaned;
   } catch (error) {
     console.warn("ユニット進捗の読み込みに失敗しました", error);
     return {};
   }
 }
 
+cleanUnitProgressData(progressData) {
+  const cleaned = {};
+
+  Object.keys(progressData || {}).forEach(unitKey => {
+    const progress = progressData[unitKey] || {};
+
+    const reviews = Array.isArray(progress.reviews)
+      ? progress.reviews
+          .map(review => Number(review))
+          .filter(review => [1, 7, 30].includes(review))
+      : [];
+
+    cleaned[unitKey] = {
+      completedAt: progress.completedAt || null,
+      reviews,
+      lastReviewedAt: progress.lastReviewedAt || null
+    };
+  });
+
+  return cleaned;
+}
+
 saveUnitProgress() {
+  this.unitProgress = this.cleanUnitProgressData(this.unitProgress);
+
   localStorage.setItem(
     this.getUnitProgressKey(),
     JSON.stringify(this.unitProgress)
