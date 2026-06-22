@@ -267,7 +267,7 @@
         <!-- 図鑑フィルターボタン -->
         <div class="flex gap-1 text-xs justify-between overflow-x-auto pb-1">
           <button onclick="app.filterWordList('all')">すべて</button>
-<button onclick="app.filterWordList('stage2')">スペル待ち</button>
+<button onclick="app.filterWordList('spelling')">スペル待ち</button>
 <button onclick="app.filterWordList('stage3')">きれいぱん</button>
         </div>
 
@@ -1164,28 +1164,7 @@ getMaxUnit() {
   return Math.max(1, Math.ceil(this.words.length / this.unitSize));
 }
 
-decideTodayUnit() {
-  const maxUnit = this.getMaxUnit();
 
-  for (let unit = 1; unit <= maxUnit; unit++) {
-    const dueReviewDay = this.getDueReviewDay(unit);
-
-    if (dueReviewDay !== null) {
-      console.log(`今日はユニット${unit}の${dueReviewDay}日後復習です`);
-      return unit;
-    }
-  }
-
-  for (let unit = 1; unit <= maxUnit; unit++) {
-    if (!this.isUnitCompleted(unit)) {
-      console.log(`今日は新規ユニット${unit}です`);
-      return unit;
-    }
-  }
-
-  console.log("すべてのユニットが完了しています。最後のユニットを表示します");
-  return maxUnit;
-}
 
 decideTodayUnits() {
   const maxUnit = this.getMaxUnit();
@@ -1333,10 +1312,10 @@ getDueReviewDay(unitNumber) {
 
   // 古い保存データで "1" のような文字列になっていても、数字にそろえる
   progress.reviews = progress.reviews
-  .map(review => Number(review))
-  .filter(review => [1, 7, 30].includes(review));
+    .map(review => Number(review))
+    .filter(review => [1, 7, 30].includes(review));
 
-const today = this.getTodayString();
+  const today = this.getTodayString();
   const daysPassed = this.getDaysBetween(progress.completedAt, today);
   const reviewDays = [1, 7, 30];
 
@@ -2308,10 +2287,10 @@ updateUnitStatusDisplay() {
 
   if (s1 >= 1) {
     return {
-      key: "meaning",
-      label: "🍞 意味OK",
-      className: "bg-amber-100 text-amber-700 border-amber-200",
-      comment: "次はスペルに挑戦"
+      key: "spelling",
+label: "✏️ スペル待ち",
+className: "bg-amber-100 text-amber-700 border-amber-200",
+comment: "次はスペルに挑戦"
     };
   }
 
@@ -2325,7 +2304,6 @@ updateUnitStatusDisplay() {
 const counts = {
   perfect: 0,
   spelling: 0,
-  meaning: 0,
   dough: 0,
   burn: 0
 };
@@ -2372,7 +2350,7 @@ summaryCard.innerHTML = `
     </div>
 
     <div class="bg-white/80 rounded-2xl p-2 border border-amber-200">
-      ✏️ スペル待ち：<b>${counts.meaning}</b>
+      ✏️ スペル待ち：<b>${counts.spelling}</b>
     </div>
 
     <div class="bg-white/80 rounded-2xl p-2 border border-stone-200">
@@ -2392,7 +2370,7 @@ if (type === "all") {
   filtered = this.words;
 }
 
-if (type === "stage2") {
+if (type === "spelling") {
   filtered = this.words.filter(w => {
     return (w.s1Correct || 0) >= 1 && (w.s3Correct || 0) < 1;
   });
