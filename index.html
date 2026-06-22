@@ -129,7 +129,6 @@
       <div class="text-xs text-amber-700">単語 1〜10</div>
       <div class="text-xs text-rose-500 font-bold">きれいぱん 0/10</div>
     </div>
-  </div>
 </div>
   
  
@@ -824,6 +823,7 @@
   this.currentUnit = 1;
   this.todayUnits = [];
   this.todayUnitIndex = 0;
+  this.todayTrayDoneIds = new Set();
   this.words = [];
   this.currentRoundWords = [];
   this.currentQuestionIndex = 0;
@@ -1353,6 +1353,53 @@ getCurrentUnitWords() {
   });
 }
 
+getCurrentTodayUnit() {
+  if (!Array.isArray(this.todayUnits) || this.todayUnits.length === 0) {
+    return null;
+  }
+
+  return this.todayUnits[this.todayUnitIndex] || null;
+}
+
+isCurrentReviewTray() {
+  const todayUnit = this.getCurrentTodayUnit();
+  return todayUnit && todayUnit.type === "review";
+}
+
+getCurrentTrayUnfinishedWords() {
+  const unitWords = this.getCurrentUnitWords();
+
+  if (this.isCurrentReviewTray()) {
+    return unitWords.filter(word => {
+      return !this.todayTrayDoneIds.has(word.id);
+    });
+  }
+
+  return unitWords.filter(word => {
+    return (word.s3Correct || 0) < 1;
+  });
+}
+
+isCurrentTrayComplete() {
+  const unitWords = this.getCurrentUnitWords();
+
+  if (unitWords.length === 0) {
+    return false;
+  }
+
+  return this.getCurrentTrayUnfinishedWords().length === 0;
+}
+
+markWordDoneForCurrentTray(word) {
+  if (!word) {
+    return;
+  }
+
+  if (this.isCurrentReviewTray()) {
+    this.todayTrayDoneIds.add(word.id);
+  }
+}
+
 isCurrentUnitComplete() {
   const unitWords = this.getCurrentUnitWords();
 
@@ -1366,7 +1413,7 @@ isCurrentUnitComplete() {
 }
 
 markCurrentUnitCompleted() {
-  if (!this.isCurrentUnitComplete()) {
+  if (!this.isCurrentTrayComplete()) {
     return;
   }
 
@@ -1417,7 +1464,7 @@ markCurrentUnitCompleted() {
 
   const unitWords = this.words.filter(w => w.id >= unitStart && w.id <= unitEnd);
 
-  let availableWords = unitWords.filter(w => (w.s3Correct || 0) < 1);
+  let availableWords = this.getCurrentTrayUnfinishedWords();
 
   if (unitWords.length === 0) {
     availableWords = [...this.words];
@@ -1680,6 +1727,7 @@ while (distractors.length < 3) {
 
         if (word.s3Streak >= 1) {
   isStageUp = true;
+  this.markWordDoneForCurrentTray(word);
   this.showGraduation(word);
 }
 
@@ -1875,11 +1923,7 @@ ${firstDiff + 1}文字目は、
   const unitStart = (this.currentUnit - 1) * this.unitSize + 1;
   const unitEnd = unitStart + this.unitSize - 1;
 
-  const unfinishedWords = this.words.filter(w => {
-    return w.id >= unitStart &&
-      w.id <= unitEnd &&
-      (w.s3Correct || 0) < 1;
-  });
+  const unfinishedWords = this.getCurrentTrayUnfinishedWords();
 
   if (unfinishedWords.length === 0) {
     this.showResultScreen();
@@ -1953,18 +1997,44 @@ goToNextTodayTray() {
   this.currentWord = null;
   this.currentStage = 1;
   this.roundLogs = [];
+  this.todayTrayDoneIds = new Set();
 
   this.updateTodayTrayDisplay();
   this.startRound();
 }
 
-  showResultScreen() {
+hasNextTodayTray() {
+  return Array.isArray(this.todayUnits) &&
+    this.todayUnitIndex < this.todayUnits.length - 1;
+}
+
+goToNextTodayTray() {
+  if (!this.hasNextTodayTray()) {
+    this.showStartScreen();
+    return;
+  }
+
+  this.todayUnitIndex++;
+  this.currentUnit = this.todayUnits[this.todayUnitIndex].unit;
+
+  this.score = 0;
+  this.currentQuestionIndex = 0;
+  this.currentRoundWords = [];
+  this.currentWord = null;
+  this.currentStage = 1;
+  this.roundLogs = [];
+
+  this.updateTodayTrayDisplay();
+  this.startRound();
+}  
+showResultScreen() {
     this.markCurrentUnitCompleted();
     this.hideAllScreens();
 
-    const screen = document.getElementById("screen-result");
-    screen.classList.remove("hidden");
-    const nextTrayButton = document.getElementById("btn-next-today-tray");
+   const screen = document.getElementById("screen-result");
+screen.classList.remove("hidden");
+
+const nextTrayButton = document.getElementById("btn-next-today-tray");
 
 if (nextTrayButton) {
   if (this.hasNextTodayTray()) {
@@ -1973,6 +2043,7 @@ if (nextTrayButton) {
     nextTrayButton.classList.add("hidden");
   }
 }
+
 
     
 document.getElementById(
