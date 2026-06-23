@@ -875,22 +875,20 @@ this.currentUnit = this.todayUnits[this.todayUnitIndex].unit;
   this.showStartScreen();
 }
 
-  resetToDefault() {
-    this.words = WORD_DATABASE.map(w => ({
-      ...w,
-      s1Correct: 0,
-      s2Correct: 0,
-      s3Correct: 0,
-      s1Streak: 0,
-      s2Streak: 0,
-      s3Streak: 0,
-      wrongCount: 0,
-      lastAnsweredAt: 0,
-      unlockedStage: 1
-    }));
+ resetToDefault() {
+  this.words = WORD_DATABASE.map(w => ({
+    ...w,
+    s1Correct: 0,
+    s3Correct: 0,
+    s1Streak: 0,
+    s3Streak: 0,
+    wrongCount: 0,
+    lastAnsweredAt: 0,
+    unlockedStage: 1
+  }));
 
-    this.saveData();
-  }
+  this.saveData();
+}
 
   mergeDatabase() {
     const merged = WORD_DATABASE.map(w => {
@@ -898,49 +896,39 @@ this.currentUnit = this.todayUnits[this.todayUnitIndex].unit;
 
       if (existing) {
   const s1Correct = existing.s1Correct || 0;
-  let s2Correct = existing.s2Correct || 0;
   const s3Correct = existing.s3Correct || 0;
 
-  let s1Streak = existing.s1Streak || 0;
-  let s2Streak = existing.s2Streak || 0;
+  const s1Streak = existing.s1Streak || 0;
   const s3Streak = existing.s3Streak || 0;
 
   let unlockedStage = 1;
 
   if (s1Correct >= 1) {
     unlockedStage = 3;
-
-    // 使わない中間ステージは通過済みにして、スペルへ進める
-    s2Correct = 2;
-    s2Streak = 2;
   }
 
   return {
     ...w,
     s1Correct,
-    s2Correct,
     s3Correct,
     s1Streak,
-    s2Streak,
     s3Streak,
     wrongCount: existing.wrongCount || 0,
     lastAnsweredAt: existing.lastAnsweredAt || 0,
     unlockedStage
   };
 }
-      return {
-        ...w,
-        s1Correct: 0,
-        s2Correct: 0,
-        s3Correct: 0,
-        s1Streak: 0,
-        s2Streak: 0,
-        s3Streak: 0,
-        wrongCount: 0,
-        lastAnsweredAt: 0,
-        unlockedStage: 1
-      };
-    });
+    return {
+     ...w,
+     s1Correct: 0,
+     s3Correct: 0,
+     s1Streak: 0,
+     s3Streak: 0,
+     wrongCount: 0,
+     lastAnsweredAt: 0,
+     unlockedStage: 1
+    };
+  });
 
     this.words = merged;
     this.saveData();
@@ -951,17 +939,15 @@ this.currentUnit = this.todayUnits[this.todayUnitIndex].unit;
   }
 
   generateSaveCode() {
-    const compactData = this.words.map(w => [
-      w.id,
-      w.s1Correct || 0,
-      w.s2Correct || 0,
-      w.s3Correct || 0,
-      w.s1Streak || 0,
-      w.s2Streak || 0,
-      w.s3Streak || 0,
-      w.wrongCount || 0,
-      w.lastAnsweredAt || 0
-    ]);
+  const compactData = this.words.map(w => [
+    w.id,
+    w.s1Correct || 0,
+    w.s3Correct || 0,
+    w.s1Streak || 0,
+    w.s3Streak || 0,
+    w.wrongCount || 0,
+    w.lastAnsweredAt || 0
+  ]);
 
     try {
       return btoa(JSON.stringify(compactData));
@@ -975,32 +961,26 @@ this.currentUnit = this.todayUnits[this.todayUnitIndex].unit;
       const decodedStr = atob(code.trim());
       const compactData = JSON.parse(decodedStr);
 
-      if (!Array.isArray(compactData)) return false;
+if (!Array.isArray(compactData)) return false;
 
-      this.words.forEach(w => {
-        const found = compactData.find(item => item[0] === w.id);
+this.words.forEach(w => {
+  const found = compactData.find(item => item[0] === w.id);
 
-        if (found) {
-          w.s1Correct = found[1] || 0;
-          w.s2Correct = found[2] || 0;
-          w.s3Correct = found[3] || 0;
-          w.s1Streak = found[4] || 0;
-          w.s2Streak = found[5] || 0;
-          w.s3Streak = found[6] || 0;
-          w.wrongCount = found[7] || 0;
-          w.lastAnsweredAt = found[8] || 0;
+  if (found) {
+    w.s1Correct = found[1] || 0;
+    w.s3Correct = found[2] || 0;
+    w.s1Streak = found[3] || 0;
+    w.s3Streak = found[4] || 0;
+    w.wrongCount = found[5] || 0;
+    w.lastAnsweredAt = found[6] || 0;
 
-if ((w.s1Correct || 0) >= 1) {
-  w.unlockedStage = 3;
-
-  // 使わない中間ステージは通過済みにして、スペルへ進める
-  w.s2Correct = 2;
-  w.s2Streak = 2;
-} else {
-  w.unlockedStage = 1;
-}
-        }
-      });
+    if ((w.s1Correct || 0) >= 1) {
+      w.unlockedStage = 3;
+    } else {
+      w.unlockedStage = 1;
+    }
+  }
+});
 
       this.saveData();
       this.updateTotalProgressDisplay();
@@ -1653,32 +1633,30 @@ document.getElementById("quiz-part-of-speech").innerText =
   }
 
   drawStars(container) {
-    const s1 = this.currentWord.s1Correct || 0;
-    const s2 = this.currentWord.s2Correct || 0;
-    const s3 = this.currentWord.s3Correct || 0;
-    const st1 = this.currentWord.s1Streak || 0;
-    const st2 = this.currentWord.s2Streak || 0;
-    const st3 = this.currentWord.s3Streak || 0;
+  const s1 = this.currentWord.s1Correct || 0;
+  const s3 = this.currentWord.s3Correct || 0;
+  const st1 = this.currentWord.s1Streak || 0;
+  const st3 = this.currentWord.s3Streak || 0;
 
-    let statusText = "";
-    let color = "";
+  let statusText = "";
+  let color = "";
 
-   if (s3 >= 1) {
-  statusText = "✨ きれいぱん完成！";
-  color = "text-amber-600";
-} else if (s1 >= 1) {
-  statusText = `🥖 スペルチャレンジ ${st3}/1`;
-  color = "text-orange-500";
-} else {
-  statusText = `🥚 意味チェック中 ${st1}/1`;
-  color = "text-stone-500";
-}
-
-    const infoSpan = document.createElement("span");
-    infoSpan.className = `font-bold ${color}`;
-    infoSpan.innerText = statusText;
-    container.appendChild(infoSpan);
+  if (s3 >= 1) {
+    statusText = "✨ きれいぱん完成！";
+    color = "text-amber-600";
+  } else if (s1 >= 1) {
+    statusText = `🥖 スペルチャレンジ ${st3}/1`;
+    color = "text-orange-500";
+  } else {
+    statusText = `🥚 意味チェック中 ${st1}/1`;
+    color = "text-stone-500";
   }
+
+  const infoSpan = document.createElement("span");
+  infoSpan.className = `font-bold ${color}`;
+  infoSpan.innerText = statusText;
+  container.appendChild(infoSpan);
+}
 
   generateChoices(isEnglishTarget) {
     const choicesArea = document.getElementById("quiz-choices");
@@ -1765,16 +1743,9 @@ while (distractors.length < 3) {
   word.wrongCount = Math.max(0, (word.wrongCount || 0) - 1);
 
   if (word.s1Streak >= 1) {
-    word.unlockedStage = 3;
-
-    // // 使わない中間ステージは通過済みにして、スペルへ進める
-word.s2Correct = 2;
-word.s2Streak = 2;
-    word.s2Correct = 2;
-    word.s2Streak = 2;
-
-    isStageUp = true;
-  }
+  word.unlockedStage = 3;
+  isStageUp = true;
+}
 }
 
       
