@@ -222,21 +222,30 @@
 </div>
 
         <!-- 焼き上がり結果のパンかご -->
-        <div class="bg-amber-100/50 p-4 rounded-2xl border border-amber-200 w-full text-center space-y-3">
-          <div class="text-5xl">🧺🥖✨</div>
-          <p class="text-sm font-bold" id="result-score-text">今日の大正解：0問！</p>
-          <p class="text-xs text-amber-700 leading-relaxed" id="result-summary-comment">
-            コメントが入ります。
-          </p>
-        </div>
+<div class="bg-amber-100/50 p-4 rounded-2xl border border-amber-200 w-full text-center space-y-3">
+  <div class="text-5xl">🧺🥖✨</div>
+  <p class="text-sm font-bold" id="result-score-text">今日の大正解：0問！</p>
+  <p class="text-xs text-amber-700 leading-relaxed" id="result-summary-comment">
+    コメントが入ります。
+  </p>
 
-        <!-- 今回の単語ステータス変化 -->
-        <div class="w-full space-y-2">
-          <p class="text-xs font-bold text-amber-800">✨ 今日焼いた単語</p>
-          <div id="result-words-list" class="max-h-48 overflow-y-auto space-y-2 pr-1">
-            <!-- 進捗リスト -->
-          </div>
-        </div>
+  <div id="today-result-summary" class="grid grid-cols-3 gap-2 text-[11px]">
+    <div class="bg-white/80 rounded-2xl p-2 border border-yellow-200">
+      <div class="font-bold text-amber-900">🥐 きれいぱん</div>
+      <div id="today-clean-count" class="text-lg font-black text-amber-950">0</div>
+    </div>
+
+    <div class="bg-white/80 rounded-2xl p-2 border border-orange-200">
+      <div class="font-bold text-amber-900">✏️ 問題</div>
+      <div id="today-question-count" class="text-lg font-black text-amber-950">0</div>
+    </div>
+
+    <div class="bg-white/80 rounded-2xl p-2 border border-stone-200">
+      <div class="font-bold text-amber-900">🍞 残り</div>
+      <div id="today-left-count" class="text-lg font-black text-amber-950">0</div>
+    </div>
+  </div>
+</div>
 
         <button
   id="btn-next-today-tray"
@@ -2137,27 +2146,71 @@ if (resultTitle && resultSubtitle) {
     resultSubtitle.textContent = "残りのパンは、次回また焼こう 🍞";
   }
 }    
-document.getElementById(
-  "result-score-text"
-).innerHTML =
-  `今日の大正解：<span class="text-2xl text-green-700 font-bold">${this.score}問</span>！`;
+const unitStart = (this.currentUnit - 1) * this.unitSize + 1;
+const unitEnd = unitStart + this.unitSize - 1;
+
+const unitWords = this.words.filter(w => {
+  return w.id >= unitStart && w.id <= unitEnd;
+});
+
+const currentCleanCount = unitWords.filter(w => {
+  return (w.s3Correct || 0) >= 1;
+}).length;
+
+const todayNewCleanCount = Math.max(
+  0,
+  currentCleanCount - this.todayCleanCountAtStart
+);
+
+const questionCount = this.roundLogs.length;
+
+const leftCount = unitWords.filter(w => {
+  return (w.s3Correct || 0) < 1;
+}).length;
+
+const resultScoreTextEl = document.getElementById("result-score-text");
+
+if (resultScoreTextEl) {
+  resultScoreTextEl.innerHTML =
+    `今日の大正解：<span class="text-2xl text-green-700 font-bold">${this.score}問</span>！`;
+}
+
+const cleanCountEl = document.getElementById("today-clean-count");
+const questionCountEl = document.getElementById("today-question-count");
+const leftCountEl = document.getElementById("today-left-count");
+
+if (cleanCountEl) {
+  cleanCountEl.textContent = todayNewCleanCount;
+}
+
+if (questionCountEl) {
+  questionCountEl.textContent = questionCount;
+}
+
+if (leftCountEl) {
+  leftCountEl.textContent = leftCount;
+}
 
 const commentEl = document.getElementById("result-summary-comment");
 
-    if (this.score === 10) {
-      commentEl.innerText =
-        "こげぱん「全問正解！？これはもう職人級の焼き上がりだよ…！」";
-    } else if (this.score >= 7) {
-      commentEl.innerText =
-        "こげぱん「かなりいい感じ！ちゃんと焼けてきてるよ🥖」";
-    } else if (this.score >= 4) {
-      commentEl.innerText =
-        "こげぱん「半分くらい焼けたね。まだ伸びるよ🍞」";
-    } else {
-      commentEl.innerText =
-        "こげぱん「今日はちょっと焦げ気味。でも焼き直せばいいんだ。」";
-    }
-
+if (commentEl) {
+  if (leftCount === 0) {
+    commentEl.innerText =
+      "こげぱん「このトレイのパン、全部きれいぱんになったよ！すごい焼き上がり！」";
+  } else if (todayNewCleanCount >= this.dailyCleanGoal) {
+    commentEl.innerText =
+      "こげぱん「きれいぱんがたくさんできたね。今日はここまでで十分だよ🥐」";
+  } else if (questionCount >= this.dailyQuestionLimit) {
+    commentEl.innerText =
+      "こげぱん「15問がんばったね。残りは次回、ゆっくり焼こう🍞」";
+  } else if (todayNewCleanCount > 0) {
+    commentEl.innerText =
+      "こげぱん「ちゃんと前に進んでるよ。少しずつ焼けてきたね🥖」";
+  } else {
+    commentEl.innerText =
+      "こげぱん「今日は下ごしらえの日。次に焼く準備はできてるよ。」";
+  }
+}
     const listEl = document.getElementById("result-words-list");
     listEl.innerHTML = "";
 
