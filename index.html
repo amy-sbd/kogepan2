@@ -958,46 +958,75 @@ this.currentUnit = this.todayUnits[this.todayUnitIndex].unit;
     w.lastAnsweredAt || 0
   ]);
 
-    try {
-      return btoa(JSON.stringify(compactData));
-    } catch (e) {
-      return "";
-    }
+  try {
+    return btoa(JSON.stringify(compactData));
+  } catch (e) {
+    return "";
   }
+}
 
-  loadFromSaveCode(code) {
-    try {
-      const decodedStr = atob(code.trim());
-      const compactData = JSON.parse(decodedStr);
+loadFromSaveCode(code) {
+  try {
+    const decodedStr = atob(code.trim());
+    const compactData = JSON.parse(decodedStr);
 
-if (!Array.isArray(compactData)) return false;
-
-this.words.forEach(w => {
-  const found = compactData.find(item => item[0] === w.id);
-
-  if (found) {
-    w.s1Correct = found[1] || 0;
-    w.s3Correct = found[2] || 0;
-    w.s1Streak = found[3] || 0;
-    w.s3Streak = found[4] || 0;
-    w.wrongCount = found[5] || 0;
-    w.lastAnsweredAt = found[6] || 0;
-
-    if ((w.s1Correct || 0) >= 1) {
-      w.unlockedStage = 3;
-    } else {
-      w.unlockedStage = 1;
-    }
-  }
-});
-
-      this.saveData();
-      this.updateTotalProgressDisplay();
-      return true;
-    } catch (e) {
+    if (!Array.isArray(compactData)) {
       return false;
     }
+
+    this.words.forEach(w => {
+      const found = compactData.find(item => item[0] === w.id);
+
+      if (found) {
+        // 新形式：
+        // [0] id
+        // [1] s1Correct
+        // [2] s3Correct
+        // [3] s1Streak
+        // [4] s3Streak
+        // [5] wrongCount
+        // [6] lastAnsweredAt
+        if (found.length <= 7) {
+          w.s1Correct = found[1] || 0;
+          w.s3Correct = found[2] || 0;
+          w.s1Streak = found[3] || 0;
+          w.s3Streak = found[4] || 0;
+          w.wrongCount = found[5] || 0;
+          w.lastAnsweredAt = found[6] || 0;
+        } else {
+          // 旧形式：
+          // [0] id
+          // [1] s1Correct
+          // [2] s2Correct
+          // [3] s3Correct
+          // [4] s1Streak
+          // [5] s2Streak
+          // [6] s3Streak
+          // [7] wrongCount
+          // [8] lastAnsweredAt
+          w.s1Correct = found[1] || 0;
+          w.s3Correct = found[3] || 0;
+          w.s1Streak = found[4] || 0;
+          w.s3Streak = found[6] || 0;
+          w.wrongCount = found[7] || 0;
+          w.lastAnsweredAt = found[8] || 0;
+        }
+
+        if ((w.s1Correct || 0) >= 1) {
+          w.unlockedStage = 3;
+        } else {
+          w.unlockedStage = 1;
+        }
+      }
+    });
+
+    this.saveData();
+    this.updateTotalProgressDisplay();
+    return true;
+  } catch (e) {
+    return false;
   }
+}
 
   showDataModal() {
     const code = this.generateSaveCode();
