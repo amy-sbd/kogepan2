@@ -1093,13 +1093,29 @@ loadFromSaveCode(code) {
   }
 
   executeReset() {
-    this.closeResetModal();
-    this.resetToDefault();
-    this.updateTotalProgressDisplay();
-    this.showStartScreen();
-    this.showToast("パンの記録をすべてリセットしたよ…どうせまた焦げるけど…");
-  }
+  localStorage.removeItem("kogepan_vocab_progress_v3");
+  localStorage.removeItem("kogepan_vocab_progress_v2");
 
+  // ユニット完了日・復習済み情報もリセットする
+  localStorage.removeItem(this.getUnitProgressKey());
+  localStorage.removeItem("kogepanUnitProgressV1");
+
+  this.unitProgress = {};
+  this.todayUnits = [];
+  this.todayUnitIndex = 0;
+  this.currentUnit = 1;
+  this.todayTrayDoneIds = new Set();
+
+  this.resetToDefault();
+
+  this.todayUnits = this.decideTodayUnits();
+  this.todayUnitIndex = 0;
+  this.currentUnit = this.todayUnits[this.todayUnitIndex].unit;
+
+  this.closeResetModal();
+  this.updateTotalProgressDisplay();
+  this.showStartScreen();
+}
   updateTotalProgressDisplay() {
     const totalWords = this.words.length;
     const clearedWords = this.words.filter(w => (w.s3Correct || 0) >= 1).length;
