@@ -1102,7 +1102,7 @@ loadFromSaveCode(code) {
 
   updateTotalProgressDisplay() {
     const totalWords = this.words.length;
-    const clearedWords = this.words.filter(w => w.s3Correct >= 3).length;
+    const clearedWords = this.words.filter(w => (w.s3Correct || 0) >= 1).length;
     const percent = Math.floor((clearedWords / totalWords) * 100);
 
     const bar = document.getElementById("total-progress-bar");
@@ -1110,7 +1110,7 @@ loadFromSaveCode(code) {
 
     if (bar && text) {
       bar.style.width = `${percent}%`;
-      text.innerHTML = `極上のきれいぱん： <b>${clearedWords}</b> / ${totalWords} 語 (${percent}%)`;
+      text.innerHTML = `きれいぱん： <b>${clearedWords}</b> / ${totalWords} 語 (${percent}%)`;
     }
 
     const footerStatus = document.getElementById("footer-character-status");
