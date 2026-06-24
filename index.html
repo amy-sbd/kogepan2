@@ -1230,21 +1230,46 @@ getMaxUnit() {
 
 
 decideTodayUnits() {
-if (this.isTodayFinished()) {
-  const finishedUnit = [
-    {
-      unit: this.currentUnit || 1,
-      type: "todayComplete",
-      reviewDay: null
-    }
-  ];
-
-  console.log("今日はすでにパン焼き完了です", finishedUnit);
-  return finishedUnit;
-}
   const maxUnit = this.getMaxUnit();
-  const todayUnits = [];
+  const today = this.getTodayString();
 
+  if (this.isTodayFinished()) {
+    const finishedUnitNumber = this.currentUnit || 1;
+
+    const finishedUnit = [
+      {
+        unit: finishedUnitNumber,
+        type: "todayComplete",
+        reviewDay: null
+      }
+    ];
+
+    console.log("今日はすでにパン焼き完了です", finishedUnit);
+    return finishedUnit;
+  }
+
+  // 今日完了したユニットがある場合は、更新しても次ユニットへ進まない
+  for (let unit = 1; unit <= maxUnit; unit++) {
+    const unitKey = String(unit);
+    const progress = this.unitProgress[unitKey];
+
+    if (progress && progress.completedAt === today) {
+      const finishedUnit = [
+        {
+          unit: unit,
+          type: "todayComplete",
+          reviewDay: null
+        }
+      ];
+
+      this.markTodayFinished();
+
+      console.log("今日完了済みのユニットがあります", finishedUnit);
+      return finishedUnit;
+    }
+  }
+
+  const todayUnits = [];
   // まず、復習日が来ているユニットを優先する
   for (let unit = 1; unit <= maxUnit; unit++) {
     const dueReviewDay = this.getDueReviewDay(unit);
