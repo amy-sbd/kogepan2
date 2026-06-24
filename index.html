@@ -2180,13 +2180,13 @@ ${firstDiff + 1}文字目は、
   const todayNewCleanCount = currentCleanCount - this.todayCleanCountAtStart;
 
   if (todayNewCleanCount >= this.dailyCleanGoal) {
-    this.showToast("今日はきれいぱん5個できたよ！ここまでにしよう 🍞");
+    this.showToast("きれいぱん5こ達成！ここまででも十分。余裕があればもう少し焼こう 🍞");
     this.showResultScreen();
     return;
   }
 
   if (this.roundLogs.length >= this.dailyQuestionLimit) {
-  this.showToast("今日は15問がんばったよ！ここまでにしよう 🍞");
+  this.showToast("今日は15問がんばったよ！余裕があればきれいぱんをふやそう 🍞");
   this.showResultScreen();
   return;
 }
