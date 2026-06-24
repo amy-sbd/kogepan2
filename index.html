@@ -197,6 +197,21 @@
             これで決まり！ 🍞
           </button>
         </div>
+                <!-- 入力エリア（記述式 - ステージ3用） -->
+        <div id="quiz-input-area" class="hidden flex-col space-y-3 pt-2">
+          <input type="text" id="quiz-typed-answer" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" inputmode="latin" placeholder="ここに英語のつづりをかいてね" class="w-full p-4 border-2 border-amber-300 rounded-2xl text-center text-xl font-bold focus:outline-none focus:border-amber-600 text-amber-950 bg-white">
+          <button onclick="app.submitTypedAnswer()" class="w-full bg-[#7F5539] text-white py-4 rounded-2xl font-bold text-lg btn-bounce shadow-md">
+            これで決まり！ 🍞
+          </button>
+        </div>
+
+        <button
+          id="btn-finish-extra-practice"
+          onclick="app.finishExtraPractice()"
+          class="hidden w-full mt-3 bg-amber-100 hover:bg-amber-200 text-amber-900 font-bold py-2.5 px-4 rounded-2xl border border-amber-300"
+        >
+          おかわり練習をやめる 🍞
+        </button>
       </div>
 
       <!-- 3. フィードバック画面 -->
@@ -266,6 +281,13 @@
   class="hidden w-full bg-orange-400 hover:bg-orange-500 text-white font-bold py-3 px-4 rounded-2xl shadow-md"
 >
   次のパン焼きトレイへ
+</button>
+<button
+  id="btn-extra-practice"
+  onclick="app.startExtraPractice()"
+  class="hidden w-full bg-amber-300 hover:bg-amber-400 text-amber-950 font-bold py-3 px-4 rounded-2xl shadow-md"
+>
+  同じユニットをもう一回焼く 🥖
 </button>
 
 <button onclick="app.showStartScreen()" class="w-full bg-[#7F5539] text-white text-lg font-bold py-4 rounded-2xl shadow-lg border-b-4 border-[#5C4033] btn-bounce">
@@ -848,6 +870,7 @@
   this.todayUnits = [];
   this.todayUnitIndex = 0;
   this.todayTrayDoneIds = new Set();
+  this.isExtraPractice = false;
 
   // 今日のパン焼きは軽めに終われるようにする
   this.dailyCleanGoal = 5;
@@ -1563,7 +1586,7 @@ markWordDoneForCurrentTray(word) {
     return;
   }
 
-  if (this.isCurrentReviewTray()) {
+  if (this.isCurrentReviewTray() || this.isExtraPractice) {
     this.todayTrayDoneIds.add(word.id);
   }
 }
@@ -1641,6 +1664,41 @@ return;
     this.unitProgress
   );
 }
+startExtraPractice() {
+  this.isExtraPractice = true;
+  this.score = 0;
+  this.roundLogs = [];
+  this.currentQuestionIndex = 0;
+  this.currentRoundWords = [];
+  this.currentWord = null;
+  this.currentStage = 1;
+  this.todayTrayDoneIds = new Set();
+
+  this.startRound();
+}
+finishExtraPractice() {
+  this.isExtraPractice = false;
+  this.todayTrayDoneIds = new Set();
+
+  this.score = 0;
+  this.roundLogs = [];
+  this.currentQuestionIndex = 0;
+  this.currentRoundWords = [];
+  this.currentWord = null;
+  this.currentStage = 1;
+
+  this.showStartScreen();
+}
+
+getCurrentQuestionPoolWords() {
+  if (this.isExtraPractice) {
+    return this.getCurrentUnitWords().filter(word => {
+      return !this.todayTrayDoneIds.has(word.id);
+    });
+  }
+
+  return this.getCurrentTrayUnfinishedWords();
+}
 
   startRound() {
   const unitStart = (this.currentUnit - 1) * this.unitSize + 1;
@@ -1659,13 +1717,12 @@ this.currentWord = null;
 this.currentStage = 1;
 const todayUnit = this.getCurrentTodayUnit();
 
-if (todayUnit && todayUnit.type === "todayComplete") {
+if (todayUnit && todayUnit.type === "todayComplete" && !this.isExtraPractice) {
   this.showResultScreen();
   return;
 }
 
-let availableWords = this.getCurrentTrayUnfinishedWords();
-
+let availableWords = this.getCurrentQuestionPoolWords();
   if (unitWords.length === 0) {
     availableWords = [...this.words];
     this.showToast("このユニットに単語が見つからないので、全体から出すよ！");
@@ -1743,7 +1800,18 @@ let availableWords = this.getCurrentTrayUnfinishedWords();
   loadQuestion() {
   this.currentWord = this.currentRoundWords[this.currentQuestionIndex];
 
-  if ((this.currentWord.s1Correct || 0) < 1) {
+  const finishExtraPracticeButton = document.getElementById("btn-finish-extra-practice");
+
+if (finishExtraPracticeButton) {
+  if (this.isExtraPractice) {
+    finishExtraPracticeButton.classList.remove("hidden");
+  } else {
+    finishExtraPracticeButton.classList.add("hidden");
+  }
+}
+
+
+ if ((this.currentWord.s1Correct || 0) < 1) {
     this.currentStage = 1;
   } else {
     this.currentStage = 3;
@@ -2123,7 +2191,7 @@ ${firstDiff + 1}文字目は、
   return;
 }
 
-  const unfinishedWords = this.getCurrentTrayUnfinishedWords();
+  const unfinishedWords = this.getCurrentQuestionPoolWords();
 
   if (unfinishedWords.length === 0) {
     this.showResultScreen();
@@ -2236,11 +2304,26 @@ goToNextTodayTray() {
 showResultScreen() {
     this.markCurrentUnitCompleted();
     this.hideAllScreens();
+    this.isExtraPractice = false;
 
    const screen = document.getElementById("screen-result");
 screen.classList.remove("hidden");
 
 const nextTrayButton = document.getElementById("btn-next-today-tray");
+const extraPracticeButton = document.getElementById("btn-extra-practice");
+
+if (extraPracticeButton) {
+  const todayUnit = this.getCurrentTodayUnit();
+
+  if (
+    this.isCurrentTrayComplete() ||
+    (todayUnit && todayUnit.type === "todayComplete")
+  ) {
+    extraPracticeButton.classList.remove("hidden");
+  } else {
+    extraPracticeButton.classList.add("hidden");
+  }
+}
 
 if (nextTrayButton) {
   if (this.hasNextTodayTray()) {
