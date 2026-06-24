@@ -1591,6 +1591,13 @@ markCurrentUnitCompleted() {
 this.todayCleanCountAtStart = unitWords.filter(w => {
   return (w.s3Correct || 0) >= 1;
 }).length;
+this.score = 0;
+this.roundLogs = [];
+this.currentQuestionIndex = 0;
+this.currentRoundWords = [];
+this.currentWord = null;
+this.currentStage = 1;
+
 
 let availableWords = this.getCurrentTrayUnfinishedWords();
 
@@ -2243,8 +2250,13 @@ const leftCount = unitWords.filter(w => {
 const resultScoreTextEl = document.getElementById("result-score-text");
 
 if (resultScoreTextEl) {
-  resultScoreTextEl.innerHTML =
-    `今日の大正解：<span class="text-2xl text-green-700 font-bold">${this.score}問</span>！`;
+  if (questionCount === 0 && this.isCurrentTrayComplete()) {
+    resultScoreTextEl.innerHTML =
+      `このトレイはもう全部きれいぱん！`;
+  } else {
+    resultScoreTextEl.innerHTML =
+      `今日の大正解：<span class="text-2xl text-green-700 font-bold">${this.score}問</span>！`;
+  }
 }
 
 const cleanCountEl = document.getElementById("today-clean-count");
