@@ -842,6 +842,7 @@
  constructor() {
   this.unitSize = 10;
   this.wordSetId = "jh1";
+  this.todayFinishedKey = `kogepanTodayFinished_${this.wordSetId}_V1`;
   this.unitProgress = this.loadUnitProgress();
   this.currentUnit = 1;
   this.todayUnits = [];
@@ -1104,6 +1105,7 @@ loadFromSaveCode(code) {
   });
 
   this.unitProgress = {};
+  this.clearTodayFinished();
   this.todayUnits = [];
   this.todayUnitIndex = 0;
   this.currentUnit = 1;
@@ -1228,6 +1230,18 @@ getMaxUnit() {
 
 
 decideTodayUnits() {
+if (this.isTodayFinished()) {
+  const finishedUnit = [
+    {
+      unit: this.currentUnit || 1,
+      type: "todayComplete",
+      reviewDay: null
+    }
+  ];
+
+  console.log("今日はすでにパン焼き完了です", finishedUnit);
+  return finishedUnit;
+}
   const maxUnit = this.getMaxUnit();
   const todayUnits = [];
 
@@ -1316,6 +1330,9 @@ getUnitWordCountByUnit(unitNumber) {
 }
 
 getTodayUnitLabel(todayUnit) {
+if (todayUnit.type === "todayComplete") {
+  return "今日は完了";
+}
   if (todayUnit.type === "review") {
     return `${todayUnit.reviewDay}日後復習`;
   }
@@ -1336,6 +1353,22 @@ getTodayUnitLabel(todayUnit) {
 }
 getUnitProgressKey() {
   return `kogepanUnitProgress_${this.wordSetId}_V1`;
+}
+
+getTodayFinishedKey() {
+  return `kogepanTodayFinished_${this.wordSetId}_V1`;
+}
+
+isTodayFinished() {
+  return localStorage.getItem(this.getTodayFinishedKey()) === this.getTodayString();
+}
+
+markTodayFinished() {
+  localStorage.setItem(this.getTodayFinishedKey(), this.getTodayString());
+}
+
+clearTodayFinished() {
+  localStorage.removeItem(this.getTodayFinishedKey());
 }
 
 getTodayString() {
@@ -1551,8 +1584,10 @@ markCurrentUnitCompleted() {
   };
 
   this.saveUnitProgress();
-  console.log("新規ユニット完了を保存しました", this.unitProgress);
-  return;
+this.markTodayFinished();
+
+console.log("新規ユニット完了を保存しました", this.unitProgress);
+return;
 }
 
   if (!Array.isArray(this.unitProgress[unitKey].reviews)) {
@@ -1597,7 +1632,12 @@ this.currentQuestionIndex = 0;
 this.currentRoundWords = [];
 this.currentWord = null;
 this.currentStage = 1;
+const todayUnit = this.getCurrentTodayUnit();
 
+if (todayUnit && todayUnit.type === "todayComplete") {
+  this.showResultScreen();
+  return;
+}
 
 let availableWords = this.getCurrentTrayUnfinishedWords();
 
