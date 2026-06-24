@@ -133,7 +133,15 @@
     </div>
 </div>
   
- 
+<div id="today-goal-card" class="bg-orange-50/90 border border-orange-200 rounded-3xl p-4 mb-4 text-center shadow-sm">
+  <div class="text-[11px] text-orange-600 font-bold">今日の目安</div>
+  <div class="mt-2 text-sm font-black text-amber-950">
+    🥐 きれいぱん5こ または ✏️ 15問で終了
+  </div>
+  <div class="mt-1 text-[11px] text-amber-700 leading-relaxed">
+    ぜんぶ完璧じゃなくても大丈夫。残りは次回また焼こう。
+  </div>
+</div> 
 </div>
         <button onclick="app.startRound()" class="w-full bg-[#9C6644] hover:bg-[#7F5539] text-white text-lg font-bold py-4 px-6 rounded-2xl shadow-lg border-b-4 border-[#5C4033] btn-bounce flex items-center justify-center gap-2">
           <span>🥖</span> 今日のパンを焼く
@@ -2242,9 +2250,11 @@ if (commentEl) {
   }
 }
     const listEl = document.getElementById("result-words-list");
-    listEl.innerHTML = "";
 
-    this.roundLogs.forEach(log => {
+if (listEl) {
+  listEl.innerHTML = "";
+
+  this.roundLogs.forEach(log => {
       const item = document.createElement("div");
 
       item.className =
@@ -2287,6 +2297,7 @@ if (commentEl) {
 
       listEl.appendChild(item);
     });
+  }
   }
 updateUnitStatusDisplay() {
   const unitTitle = document.getElementById("unit-title");
