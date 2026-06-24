@@ -2364,7 +2364,7 @@ if (resultTitle && resultSubtitle) {
     }
   } else if (reachedCleanGoal) {
     resultTitle.textContent = "今日はここまで！";
-    resultSubtitle.textContent = `きれいぱんが${this.dailyCleanGoal}個できたよ。残りは次回また焼こう 🥐`;
+    resultSubtitle.textContent = `きれいぱんが${this.dailyCleanGoal}個できたよ。余裕があれば残りも焼けるよ 🥐`;
   } else if (reachedQuestionLimit) {
     resultTitle.textContent = "今日はここまで！";
     resultSubtitle.textContent = `${this.dailyQuestionLimit}問がんばったよ。残りは次回また焼こう 🍞`;
@@ -2430,8 +2430,8 @@ if (commentEl) {
     commentEl.innerText =
       "こげぱん「このトレイのパン、全部きれいぱんになったよ！すごい焼き上がり！」";
   } else if (todayNewCleanCount >= this.dailyCleanGoal) {
-    commentEl.innerText =
-      "こげぱん「きれいぱんがたくさんできたね。今日はここまでで十分だよ🥐」";
+  commentEl.innerText =
+    "こげぱん「きれいぱん5こ達成！ここまででも十分だよ。余裕があったら、残りのパンも焼いてみよう🥐」";
   } else if (questionCount >= this.dailyQuestionLimit) {
     commentEl.innerText =
       "こげぱん「15問がんばったね。残りは次回、ゆっくり焼こう🍞」";
