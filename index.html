@@ -2786,10 +2786,11 @@ filtered.forEach(w => {
       gainNode.gain.setValueAtTime(0.08, audioCtx.currentTime);
       gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.18);
     } else if (type === "wrong") {
-      oscillator.frequency.setValueAtTime(220, audioCtx.currentTime);
-      oscillator.frequency.setValueAtTime(160, audioCtx.currentTime + 0.08);
-      gainNode.gain.setValueAtTime(0.06, audioCtx.currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.2);
+  oscillator.type = "triangle";
+  oscillator.frequency.setValueAtTime(330, audioCtx.currentTime);
+  oscillator.frequency.setValueAtTime(220, audioCtx.currentTime + 0.08);
+  gainNode.gain.setValueAtTime(0.12, audioCtx.currentTime);
+  gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.28);
     } else if (type === "complete") {
       oscillator.frequency.setValueAtTime(880, audioCtx.currentTime);
       oscillator.frequency.setValueAtTime(1175, audioCtx.currentTime + 0.08);
@@ -2798,7 +2799,9 @@ filtered.forEach(w => {
       gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.35);
     }
 
-    oscillator.type = "sine";
+    if (type !== "wrong") {
+  oscillator.type = "sine";
+}
     oscillator.start();
     oscillator.stop(audioCtx.currentTime + 0.35);
   } catch (error) {
