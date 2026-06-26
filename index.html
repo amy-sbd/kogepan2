@@ -256,6 +256,21 @@
   <p class="text-xs text-amber-700 leading-relaxed" id="result-summary-comment">
     コメントが入ります。
   </p>
+<div
+  id="result-bake-label"
+  class="bg-white/80 border border-amber-200 rounded-2xl px-3 py-2 text-center shadow-sm"
+>
+  <div class="text-[10px] text-amber-600 font-bold">
+    今回の焼き上がり
+  </div>
+  <div
+    id="result-bake-label-text"
+    class="mt-1 text-sm font-black text-amber-950"
+  >
+    🍞 焼き上がりチェック中
+  </div>
+</div>
+
   <div
   id="tray-complete-celebration"
   class="hidden bg-yellow-50 border-2 border-yellow-300 rounded-3xl p-4 text-center space-y-2 shadow-sm"
@@ -2464,6 +2479,26 @@ if (questionCountEl) {
 
 if (leftCountEl) {
   leftCountEl.textContent = leftCount;
+}
+
+const bakeLabelTextEl = document.getElementById("result-bake-label-text");
+
+if (bakeLabelTextEl) {
+  let bakeLabel = "🥣 下ごしらえの日";
+
+  if (leftCount === 0) {
+    bakeLabel = "🎉 トレイ完成スペシャル";
+  } else if (todayNewCleanCount >= this.dailyCleanGoal) {
+    bakeLabel = "🥐 目標クリア焼き";
+  } else if (todayNewCleanCount >= 3) {
+    bakeLabel = "✨ いい感じ焼き";
+  } else if (todayNewCleanCount >= 1) {
+    bakeLabel = "🍞 じわじわ焼き";
+  } else if (questionCount >= this.dailyQuestionLimit) {
+    bakeLabel = "🔥 ねばりの焼き直し";
+  }
+
+  bakeLabelTextEl.textContent = bakeLabel;
 }
 
 const commentEl = document.getElementById("result-summary-comment");
