@@ -2120,9 +2120,16 @@ ${firstDiff + 1}文字目は、
   wordMeaning.innerText = `意味：${this.currentWord.meaning}`;
 
   if (isCorrect) {
-    charContainer.innerHTML = CharacterSVGs.praise;
+  charContainer.className =
+    "w-full flex justify-center items-center mb-4";
 
-    banner.innerHTML = `
+  charContainer.innerHTML = `
+    <div class="w-52 max-w-[70vw] flex justify-center items-center">
+      ${CharacterSVGs.praise}
+    </div>
+  `;
+
+  banner.innerHTML = `
       <p class="text-amber-500 text-xs font-bold uppercase tracking-wider">CORRECT!</p>
       <h3 class="text-3xl font-extrabold text-green-700 font-magic animate-bounce">✨ 大正解！ ✨</h3>
     `;
@@ -2155,12 +2162,19 @@ ${firstDiff + 1}文字目は、
       }
     }
   } else {
-    charContainer.innerHTML = CharacterSVGs.disappoint;
+  charContainer.className =
+    "w-full flex justify-center items-center mb-4";
 
-    banner.innerHTML = `
-      <p class="text-amber-600 text-xs font-bold uppercase tracking-wider">DON'T MIND</p>
-      <h3 class="text-2xl font-bold text-amber-800 font-magic">焼き直そう 🍞</h3>
-    `;
+  charContainer.innerHTML = `
+    <div class="w-52 max-w-[70vw] flex justify-center items-center">
+      ${CharacterSVGs.disappoint}
+    </div>
+  `;
+
+  banner.innerHTML = `
+    <p class="text-amber-600 text-xs font-bold uppercase tracking-wider">DON'T MIND</p>
+    <h3 class="text-2xl font-bold text-amber-800 font-magic">焼き直そう 🍞</h3>
+  `;
 
     const correctWord = this.currentWord.word;
     const correctMeaning = this.currentWord.meaning;
