@@ -252,19 +252,35 @@
         <!-- 焼き上がり結果のパンかご -->
 <div class="bg-amber-100/50 p-4 rounded-2xl border border-amber-200 w-full text-center space-y-3">
   <div class="text-5xl">🧺🥖✨</div>
-  <p class="text-sm font-bold" id="result-score-text">今日の大正解：0問！</p>
+  <p class="text-sm font-bold" id="result-score-text">今回の大正解：0問！</p>
   <p class="text-xs text-amber-700 leading-relaxed" id="result-summary-comment">
     コメントが入ります。
   </p>
+  <div
+  id="tray-complete-celebration"
+  class="hidden bg-yellow-50 border-2 border-yellow-300 rounded-3xl p-4 text-center space-y-2 shadow-sm"
+>
+  <div class="text-3xl">🎉🥐✨</div>
+  <div class="text-sm font-black text-amber-950">
+    パン焼きトレイ完成！
+  </div>
+  <div class="text-xs text-amber-700 leading-relaxed">
+    ぜんぶ、きれいぱんになったよ。すごい焼き上がり！
+  </div>
+  <div class="text-2xl tracking-wide">
+    🥐🥐🥐🥐🥐<br>
+    🥐🥐🥐🥐🥐
+  </div>
+</div>
 
   <div id="today-result-summary" class="grid grid-cols-3 gap-2 text-[11px]">
     <div class="bg-white/80 rounded-2xl p-2 border border-yellow-200">
-      <div class="font-bold text-amber-900">🥐 きれいぱん</div>
+      <div class="font-bold text-amber-900">🥐 できたパン</div>
       <div id="today-clean-count" class="text-lg font-black text-amber-950">0</div>
     </div>
 
     <div class="bg-white/80 rounded-2xl p-2 border border-orange-200">
-      <div class="font-bold text-amber-900">✏️ 問題</div>
+      <div class="font-bold text-amber-900">✏️ 解いた数</div>
       <div id="today-question-count" class="text-lg font-black text-amber-950">0</div>
     </div>
 
@@ -2395,6 +2411,16 @@ const leftCount = unitWords.filter(w => {
   return (w.s3Correct || 0) < 1;
 }).length;
 
+const completeCelebrationEl = document.getElementById("tray-complete-celebration");
+
+if (completeCelebrationEl) {
+  if (leftCount === 0) {
+    completeCelebrationEl.classList.remove("hidden");
+  } else {
+    completeCelebrationEl.classList.add("hidden");
+  }
+}
+
 const resultScoreTextEl = document.getElementById("result-score-text");
 
 if (resultScoreTextEl) {
@@ -2403,7 +2429,7 @@ if (resultScoreTextEl) {
       `このトレイはもう全部きれいぱん！`;
   } else {
     resultScoreTextEl.innerHTML =
-      `今日の大正解：<span class="text-2xl text-green-700 font-bold">${this.score}問</span>！`;
+      `今回の大正解：<span class="text-2xl text-green-700 font-bold">${this.score}問</span>！`;
   }
 }
 
@@ -2427,9 +2453,9 @@ const commentEl = document.getElementById("result-summary-comment");
 
 if (commentEl) {
   if (leftCount === 0) {
-    commentEl.innerText =
-      "こげぱん「このトレイのパン、全部きれいぱんになったよ！すごい焼き上がり！」";
-  } else if (todayNewCleanCount >= this.dailyCleanGoal) {
+  commentEl.innerText =
+    "こげぱん「まぶしい…！このトレイ、ぜんぶきれいぱんだ…！」";
+} else if (todayNewCleanCount >= this.dailyCleanGoal) {
   commentEl.innerText =
     "こげぱん「きれいぱん5こ達成！ここまででも十分だよ。余裕があったら、残りのパンも焼いてみよう🥐」";
   } else if (questionCount >= this.dailyQuestionLimit) {
