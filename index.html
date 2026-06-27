@@ -122,8 +122,34 @@
           <p id="total-progress-text" class="text-xs text-amber-900">ロード中...</p>
         </div>
 
+       <div
+  id="home-title-card"
+  class="bg-yellow-50/80 border border-yellow-200 rounded-3xl p-3 mb-4 text-center shadow-sm"
+>
+
+  <div class="text-[10px] text-amber-600 font-bold">現在の称号</div>
+  <div id="home-title-name" class="mt-1 text-sm font-black text-amber-950">
+    🍞 見習いパン焼き
+  </div>
+  <div id="home-title-next" class="mt-1 text-[10px] text-orange-700 font-bold">
+    あと5個で「パン焼き係」！
+  </div>
+</div>
+<div
+  id="kogepan-confidence-card"
+  class="bg-amber-50/80 border border-amber-200 rounded-3xl p-3 mb-4 text-center shadow-sm"
+>
+  <div class="text-[10px] text-amber-600 font-bold">こげぱんの自信</div>
+  <div id="kogepan-confidence-bar" class="mt-2 text-lg tracking-wide">
+    ○○○○○○○○○○
+  </div>
+  <div id="kogepan-confidence-text" class="mt-1 text-[10px] text-orange-700 font-bold">
+    0/10　まだこれから…
+  </div>
+</div>
         <div id="unit-status-card" class="bg-white/80 border border-amber-200 rounded-3xl p-4 mb-4 text-center shadow-sm">
   <div class="text-[11px] text-amber-600 font-bold">今日のパン焼きトレイ</div>
+  
 
   <div id="today-tray-list" class="mt-3 space-y-2">
     <div class="rounded-2xl bg-amber-50 border border-amber-100 px-3 py-2">
@@ -883,6 +909,7 @@
   this.todayUnits = [];
   this.todayUnitIndex = 0;
   this.todayTrayDoneIds = new Set();
+  this.kogepanConfidence = this.loadKogepanConfidence();
   this.isExtraPractice = false;
 
   // 今日のパン焼きは軽めに終われるようにする
@@ -932,6 +959,36 @@ this.todayUnitIndex = 0;
 this.currentUnit = this.todayUnits[this.todayUnitIndex].unit;
   this.updateTotalProgressDisplay();
   this.showStartScreen();
+}
+updateKogepanConfidenceDisplay() {
+  const barEl = document.getElementById("kogepan-confidence-bar");
+  const textEl = document.getElementById("kogepan-confidence-text");
+
+  if (!barEl || !textEl) {
+    return;
+  }
+
+  const confidence = Math.max(0, this.kogepanConfidence || 0);
+  const displayCount = Math.min(confidence, 10);
+
+  const filled = "🍞".repeat(displayCount);
+  const empty = "○".repeat(10 - displayCount);
+
+  barEl.textContent = filled + empty;
+
+  let message = "まだこれから…";
+
+  if (confidence >= 10) {
+    message = "かなり自信ついてきた…！";
+  } else if (confidence >= 6) {
+    message = "ちょっと胸を張れるかも…";
+  } else if (confidence >= 3) {
+    message = "少しわかってきたかも…";
+  } else if (confidence >= 1) {
+    message = "ちょっとだけ自信…";
+  }
+
+  textEl.textContent = `${displayCount}/10　${message}`;
 }
 
  resetToDefault() {
@@ -1206,7 +1263,67 @@ if (footerStatus) {
       `キレイパン「きれいぱん${cleanPanCount}個！？伝説のベーカリー店長、誕生だよ！👑✨」`;
   }
 }
-  }  hideAllScreens() {
+  }
+  getKogepanConfidenceKey() {
+  return `kogepanConfidence_${this.wordSetId}_V1`;
+}
+
+loadKogepanConfidence() {
+  const saved = localStorage.getItem(this.getKogepanConfidenceKey());
+  const value = Number(saved);
+
+  if (Number.isNaN(value)) {
+    return 0;
+  }
+
+  return Math.max(0, value);
+}
+
+saveKogepanConfidence() {
+  localStorage.setItem(
+    this.getKogepanConfidenceKey(),
+    String(this.kogepanConfidence || 0)
+  );
+}
+  getBakeryTitleInfo(graduatedCount) {
+  let title = "こげぱん見習い";
+  let nextGoal = "まずは5個のきれいぱんを焼こう！";
+
+  if (graduatedCount >= 400) {
+    title = "こげぱんベーカリー殿堂入り";
+    nextGoal = "すごすぎる…このベーカリー、ぜんぶきれいぱんだらけ！";
+  } else if (graduatedCount >= 300) {
+    title = "伝説のベーカリー店長";
+    nextGoal = `あと${400 - graduatedCount}個で「こげぱんベーカリー殿堂入り」！`;
+  } else if (graduatedCount >= 200) {
+    title = "黄金のパン職人";
+    nextGoal = `あと${300 - graduatedCount}個で「伝説のベーカリー店長」！`;
+  } else if (graduatedCount >= 150) {
+    title = "きれいぱん名人";
+    nextGoal = `あと${200 - graduatedCount}個で「黄金のパン職人」！`;
+  } else if (graduatedCount >= 100) {
+    title = "ベーカリー店長";
+    nextGoal = `あと${150 - graduatedCount}個で「きれいぱん名人」！`;
+  } else if (graduatedCount >= 50) {
+    title = "キレイパン職人";
+    nextGoal = `あと${100 - graduatedCount}個で「ベーカリー店長」！`;
+  } else if (graduatedCount >= 20) {
+    title = "こんがり職人";
+    nextGoal = `あと${50 - graduatedCount}個で「キレイパン職人」！`;
+  } else if (graduatedCount >= 5) {
+    title = "パン焼き係";
+    nextGoal = `あと${20 - graduatedCount}個で「こんがり職人」！`;
+  } else {
+    title = "見習いパン焼き";
+    nextGoal = `あと${5 - graduatedCount}個で「パン焼き係」！`;
+  }
+
+  return {
+    title,
+    nextGoal
+  };
+}
+  hideAllScreens() {
     document.getElementById("screen-start").classList.add("hidden");
     document.getElementById("screen-quiz").classList.add("hidden");
     document.getElementById("screen-feedback").classList.add("hidden");
@@ -1250,14 +1367,33 @@ updateTodayTrayDisplay() {
     `;
   }).join("");
 }
+updateHomeTitleDisplay() {
+  const titleNameEl = document.getElementById("home-title-name");
+  const titleNextEl = document.getElementById("home-title-next");
+
+  if (!titleNameEl || !titleNextEl) {
+    return;
+  }
+
+  const graduatedCount = this.words.filter(w => {
+    return (w.s3Correct || 0) >= 1;
+  }).length;
+
+  const titleInfo = this.getBakeryTitleInfo(graduatedCount);
+
+  titleNameEl.textContent = `🍞 ${titleInfo.title}`;
+  titleNextEl.textContent = titleInfo.nextGoal;
+}
  
   showStartScreen() {
 
   this.hideAllScreens();
   this.updateTotalProgressDisplay();
   this.updateUnitStatusDisplay();
+  this.updateKogepanConfidenceDisplay();
   document.getElementById("screen-start").classList.remove("hidden");
   this.updateTodayTrayDisplay();
+  this.updateHomeTitleDisplay();
 }
 getMaxUnit() {
   return Math.max(1, Math.ceil(this.words.length / this.unitSize));
@@ -2332,10 +2468,18 @@ goToNextTodayTray() {
   this.startRound();
 }  
 showResultScreen() {
-    this.markCurrentUnitCompleted();
-    this.hideAllScreens();
-    this.isExtraPractice = false;
+  const wasExtraPractice = this.isExtraPractice;
 
+  this.markCurrentUnitCompleted();
+
+  if (wasExtraPractice && this.isCurrentTrayComplete()) {
+    this.kogepanConfidence = (this.kogepanConfidence || 0) + 1;
+    this.saveKogepanConfidence();
+    this.showToast("こげぱんの自信が1あがったよ 🍞");
+  }
+
+  this.hideAllScreens();
+  this.isExtraPractice = false;
    const screen = document.getElementById("screen-result");
 screen.classList.remove("hidden");
 
@@ -2603,37 +2747,9 @@ this.words.forEach(w => {
 });
 
  const graduatedCount = counts.perfect;
-let title = "こげぱん見習い";
-let nextGoal = "まずは5個のきれいぱんを焼こう！";
-
-if (graduatedCount >= 400) {
-  title = "こげぱんベーカリー殿堂入り";
-  nextGoal = "すごすぎる…このベーカリー、ぜんぶきれいぱんだらけ！";
-} else if (graduatedCount >= 300) {
-  title = "伝説のベーカリー店長";
-  nextGoal = `あと${400 - graduatedCount}個で「こげぱんベーカリー殿堂入り」！`;
-} else if (graduatedCount >= 200) {
-  title = "黄金のパン職人";
-  nextGoal = `あと${300 - graduatedCount}個で「伝説のベーカリー店長」！`;
-} else if (graduatedCount >= 150) {
-  title = "きれいぱん名人";
-  nextGoal = `あと${200 - graduatedCount}個で「黄金のパン職人」！`;
-} else if (graduatedCount >= 100) {
-  title = "ベーカリー店長";
-  nextGoal = `あと${150 - graduatedCount}個で「きれいぱん名人」！`;
-} else if (graduatedCount >= 50) {
-  title = "キレイパン職人";
-  nextGoal = `あと${100 - graduatedCount}個で「ベーカリー店長」！`;
-} else if (graduatedCount >= 20) {
-  title = "こんがり職人";
-  nextGoal = `あと${50 - graduatedCount}個で「キレイパン職人」！`;
-} else if (graduatedCount >= 5) {
-  title = "パン焼き係";
-  nextGoal = `あと${20 - graduatedCount}個で「こんがり職人」！`;
-} else {
-  title = "見習いパン焼き";
-  nextGoal = `あと${5 - graduatedCount}個で「パン焼き係」！`;
-}
+const titleInfo = this.getBakeryTitleInfo(graduatedCount);
+const title = titleInfo.title;
+const nextGoal = titleInfo.nextGoal;
 const summaryCard = document.createElement("div");
 summaryCard.className =
   "bg-gradient-to-br from-yellow-50 to-orange-100 p-4 rounded-3xl border-2 border-yellow-300 shadow-md mb-4 text-xs";
