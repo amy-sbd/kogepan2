@@ -911,6 +911,7 @@
   this.todayTrayDoneIds = new Set();
   this.kogepanConfidence = this.loadKogepanConfidence();
   this.isExtraPractice = false;
+  this.extraPracticeRewardGiven = false;
 
   // 今日のパン焼きは軽めに終われるようにする
   this.dailyCleanGoal = 5;
@@ -1815,6 +1816,7 @@ return;
 }
 startExtraPractice() {
   this.isExtraPractice = true;
+  this.extraPracticeRewardGiven = false;
   this.score = 0;
   this.roundLogs = [];
   this.currentQuestionIndex = 0;
@@ -2472,11 +2474,16 @@ showResultScreen() {
 
   this.markCurrentUnitCompleted();
 
-  if (wasExtraPractice && this.isCurrentTrayComplete()) {
-    this.kogepanConfidence = (this.kogepanConfidence || 0) + 1;
-    this.saveKogepanConfidence();
-    this.showToast("こげぱんの自信が1あがったよ 🍞");
-  }
+  if (
+  wasExtraPractice &&
+  this.isCurrentTrayComplete() &&
+  !this.extraPracticeRewardGiven
+) {
+  this.kogepanConfidence = (this.kogepanConfidence || 0) + 1;
+  this.saveKogepanConfidence();
+  this.extraPracticeRewardGiven = true;
+  this.showToast("こげぱんの自信が1あがったよ 🍞");
+}
 
   this.hideAllScreens();
   this.isExtraPractice = false;
