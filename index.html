@@ -2528,7 +2528,10 @@ if (resultTitle && resultSubtitle) {
   const todayNewCleanCount = currentCleanCount - this.todayCleanCountAtStart;
   const reachedCleanGoal = todayNewCleanCount >= this.dailyCleanGoal;
 
-  if (isTrayComplete) {
+  if (wasExtraPractice) {
+  resultTitle.textContent = "おかわり焼き成功！";
+  resultSubtitle.textContent = "こげぱんの自信が少し増えたよ 🍞";
+} else if (isTrayComplete) {
   if (this.isLastTodayTray()) {
     resultTitle.textContent = "パン焼き完了！";
     resultSubtitle.textContent = "ぜんぶ焼けたよ 🍞";
@@ -2600,10 +2603,13 @@ if (leftCountEl) {
 const commentEl = document.getElementById("result-summary-comment");
 
 if (commentEl) {
-  if (leftCount === 0) {
-  commentEl.innerText =
-    "こげぱん「まぶしい…！このトレイ、ぜんぶきれいぱんだ…！」";
-} else if (todayNewCleanCount >= this.dailyCleanGoal) {
+  if (wasExtraPractice) {
+    commentEl.innerText =
+      "こげぱん「もう一回焼いたら、ちょっと自信ついた…！」";
+  } else if (leftCount === 0) {
+    commentEl.innerText =
+      "こげぱん「ぜんぶ焼けたね…！」";
+  } else if (todayNewCleanCount >= this.dailyCleanGoal) {
   commentEl.innerText =
     "こげぱん「いい焼き上がり…！」";
 } else if (questionCount >= this.dailyQuestionLimit) {
