@@ -138,9 +138,6 @@
   <div class="mt-2 text-sm font-black text-amber-950">
     🥐 きれいぱん5こ または ✏️ 15問で終了
   </div>
-  <div class="mt-1 text-[11px] text-amber-700 leading-relaxed">
-    ぜんぶ完璧じゃなくても大丈夫。残りは次回また焼こう。
-  </div>
 </div> 
 </div>
         <button onclick="app.startRound()" class="w-full bg-[#9C6644] hover:bg-[#7F5539] text-white text-lg font-bold py-4 px-6 rounded-2xl shadow-lg border-b-4 border-[#5C4033] btn-bounce flex items-center justify-center gap-2">
@@ -252,24 +249,9 @@
         <!-- 焼き上がり結果のパンかご -->
 <div class="bg-amber-100/50 p-4 rounded-2xl border border-amber-200 w-full text-center space-y-3">
   <div class="text-5xl">🧺🥖✨</div>
-  <p class="text-sm font-bold" id="result-score-text">今回の大正解：0問！</p>
   <p class="text-xs text-amber-700 leading-relaxed" id="result-summary-comment">
     コメントが入ります。
   </p>
-<div
-  id="result-bake-label"
-  class="bg-white/80 border border-amber-200 rounded-2xl px-3 py-2 text-center shadow-sm"
->
-  <div class="text-[10px] text-amber-600 font-bold">
-    今回の焼き上がり
-  </div>
-  <div
-    id="result-bake-label-text"
-    class="mt-1 text-sm font-black text-amber-950"
-  >
-    🍞 焼き上がりチェック中
-  </div>
-</div>
 
   <div
   id="tray-complete-celebration"
@@ -2403,23 +2385,23 @@ if (resultTitle && resultSubtitle) {
   const reachedCleanGoal = todayNewCleanCount >= this.dailyCleanGoal;
 
   if (isTrayComplete) {
-    if (this.isLastTodayTray()) {
-      resultTitle.textContent = "今日のパン焼き完了！";
-      resultSubtitle.textContent = "ユニットのパンが全部きれいぱんになったよ 🍞";
-    } else {
-      resultTitle.textContent = "おつかれさま！";
-      resultSubtitle.textContent = "このトレイは完了！次のパン焼きトレイもあるよ";
-    }
-  } else if (reachedCleanGoal) {
-    resultTitle.textContent = "今日はここまで！";
-    resultSubtitle.textContent = `きれいぱんが${this.dailyCleanGoal}個できたよ。余裕があれば残りも焼けるよ 🥐`;
-  } else if (reachedQuestionLimit) {
-    resultTitle.textContent = "今日はここまで！";
-    resultSubtitle.textContent = `${this.dailyQuestionLimit}問がんばったよ。残りは次回また焼こう 🍞`;
+  if (this.isLastTodayTray()) {
+    resultTitle.textContent = "パン焼き完了！";
+    resultSubtitle.textContent = "ぜんぶ焼けたよ 🍞";
   } else {
-    resultTitle.textContent = "今日はここまで！";
-    resultSubtitle.textContent = "残りのパンは、次回また焼こう 🍞";
+    resultTitle.textContent = "トレイ完了！";
+    resultSubtitle.textContent = "次のトレイもあるよ";
   }
+} else if (reachedCleanGoal) {
+  resultTitle.textContent = "今日はここまで！";
+  resultSubtitle.textContent = `きれいぱん${this.dailyCleanGoal}こ達成 🥐`;
+} else if (reachedQuestionLimit) {
+  resultTitle.textContent = "今日はここまで！";
+  resultSubtitle.textContent = `${this.dailyQuestionLimit}問がんばったよ 🍞`;
+} else {
+  resultTitle.textContent = "今日はここまで！";
+  resultSubtitle.textContent = "また次回焼こう 🍞";
+}
 }    
 const unitStart = (this.currentUnit - 1) * this.unitSize + 1;
 const unitEnd = unitStart + this.unitSize - 1;
@@ -2453,18 +2435,6 @@ if (completeCelebrationEl) {
   }
 }
 
-const resultScoreTextEl = document.getElementById("result-score-text");
-
-if (resultScoreTextEl) {
-  if (questionCount === 0 && this.isCurrentTrayComplete()) {
-    resultScoreTextEl.innerHTML =
-      `このトレイはもう全部きれいぱん！`;
-  } else {
-    resultScoreTextEl.innerHTML =
-      `今回の大正解：<span class="text-2xl text-green-700 font-bold">${this.score}問</span>！`;
-  }
-}
-
 const cleanCountEl = document.getElementById("today-clean-count");
 const questionCountEl = document.getElementById("today-question-count");
 const leftCountEl = document.getElementById("today-left-count");
@@ -2481,25 +2451,7 @@ if (leftCountEl) {
   leftCountEl.textContent = leftCount;
 }
 
-const bakeLabelTextEl = document.getElementById("result-bake-label-text");
 
-if (bakeLabelTextEl) {
-  let bakeLabel = "🥣 下ごしらえの日";
-
-  if (leftCount === 0) {
-    bakeLabel = "🎉 トレイ完成スペシャル";
-  } else if (todayNewCleanCount >= this.dailyCleanGoal) {
-    bakeLabel = "🥐 目標クリア焼き";
-  } else if (todayNewCleanCount >= 3) {
-    bakeLabel = "✨ いい感じ焼き";
-  } else if (todayNewCleanCount >= 1) {
-    bakeLabel = "🍞 じわじわ焼き";
-  } else if (questionCount >= this.dailyQuestionLimit) {
-    bakeLabel = "🔥 ねばりの焼き直し";
-  }
-
-  bakeLabelTextEl.textContent = bakeLabel;
-}
 
 const commentEl = document.getElementById("result-summary-comment");
 
@@ -2509,8 +2461,8 @@ if (commentEl) {
     "こげぱん「まぶしい…！このトレイ、ぜんぶきれいぱんだ…！」";
 } else if (todayNewCleanCount >= this.dailyCleanGoal) {
   commentEl.innerText =
-    "こげぱん「きれいぱん5こ達成！ここまででも十分だよ。余裕があったら、残りのパンも焼いてみよう🥐」";
-  } else if (questionCount >= this.dailyQuestionLimit) {
+    "こげぱん「いい焼き上がり…！」";
+} else if (questionCount >= this.dailyQuestionLimit) {
     commentEl.innerText =
       "こげぱん「15問がんばったね。残りは次回、ゆっくり焼こう🍞」";
   } else if (todayNewCleanCount > 0) {
