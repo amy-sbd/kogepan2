@@ -143,11 +143,25 @@
   <div class="border-t border-yellow-200 pt-3">
     <div class="text-[10px] text-amber-600 font-bold">こげぱんの自信</div>
     <div id="kogepan-confidence-bar" class="mt-1 text-base tracking-wide">
-      ○○○○○○○○○○
+      ○○○
     </div>
     <div id="kogepan-confidence-text" class="mt-1 text-[10px] text-orange-700 font-bold">
-      0/10　まだこれから…
+      0/3　まだこれから…
     </div>
+    <div
+  id="home-kogepan-mood"
+  class="mt-3 bg-white/70 border border-amber-100 rounded-2xl px-3 py-2 flex items-center gap-3 text-left"
+>
+  <div id="home-kogepan-face" class="text-3xl leading-none">
+    🥖
+  </div>
+  <div
+    id="home-kogepan-message"
+    class="text-[11px] text-amber-800 font-bold leading-relaxed"
+  >
+    こげぱん「まだちょっと不安だけど…がんばる…」
+  </div>
+</div>
   </div>
 </div>
         <div id="unit-status-card" class="bg-white/80 border border-amber-200 rounded-3xl p-4 mb-4 text-center shadow-sm">
@@ -978,27 +992,53 @@ updateKogepanConfidenceDisplay() {
     return;
   }
 
-  const confidence = Math.max(0, this.kogepanConfidence || 0);
-  const displayCount = Math.min(confidence, 10);
+  const confidence = Math.min(Math.max(0, this.kogepanConfidence || 0), 3);
+  const displayCount = confidence;
 
   const filled = "🍞".repeat(displayCount);
-  const empty = "○".repeat(10 - displayCount);
+  const empty = "○".repeat(3 - displayCount);
 
   barEl.textContent = filled + empty;
 
   let message = "まだこれから…";
 
-  if (confidence >= 10) {
-    message = "かなり自信ついてきた…！";
-  } else if (confidence >= 6) {
+  if (confidence >= 3) {
+    message = "今日はかなり自信ついた…！";
+  } else if (confidence >= 2) {
     message = "ちょっと胸を張れるかも…";
-  } else if (confidence >= 3) {
-    message = "少しわかってきたかも…";
   } else if (confidence >= 1) {
     message = "ちょっとだけ自信…";
   }
 
-  textEl.textContent = `${displayCount}/10　${message}`;
+  textEl.textContent = `${displayCount}/3　${message}`;
+}
+updateHomeKogepanMood() {
+  const faceEl = document.getElementById("home-kogepan-face");
+  const messageEl = document.getElementById("home-kogepan-message");
+
+  if (!faceEl || !messageEl) {
+    return;
+  }
+
+  const confidence = Math.min(Math.max(0, this.kogepanConfidence || 0), 3);
+
+  if (confidence >= 3) {
+    faceEl.textContent = "🍞";
+    messageEl.textContent =
+      "こげぱん「今日はかなり自信あるかも…！」";
+  } else if (confidence >= 2) {
+    faceEl.textContent = "🥐";
+    messageEl.textContent =
+      "こげぱん「なんか、少しわかってきた気がする…！」";
+  } else if (confidence >= 1) {
+    faceEl.textContent = "🥖";
+    messageEl.textContent =
+      "こげぱん「ちょっとだけ自信ついた…たぶん…」";
+  } else {
+    faceEl.textContent = "🥖";
+    messageEl.textContent =
+      "こげぱん「まだちょっと不安だけど…がんばる…」";
+  }
 }
 
  resetToDefault() {
@@ -1280,19 +1320,45 @@ if (footerStatus) {
 
 loadKogepanConfidence() {
   const saved = localStorage.getItem(this.getKogepanConfidenceKey());
-  const value = Number(saved);
 
-  if (Number.isNaN(value)) {
+  if (!saved) {
     return 0;
   }
 
-  return Math.max(0, value);
-}
+  try {
+    const data = JSON.parse(saved);
+    const today = this.getTodayString();
 
+    if (data.date !== today) {
+      return 0;
+    }
+
+    const value = Number(data.count);
+
+    if (Number.isNaN(value)) {
+      return 0;
+    }
+
+    return Math.min(Math.max(0, value), 3);
+  } catch (error) {
+    const value = Number(saved);
+
+    if (Number.isNaN(value)) {
+      return 0;
+    }
+
+    return Math.min(Math.max(0, value), 3);
+  }
+}
 saveKogepanConfidence() {
+  const data = {
+    date: this.getTodayString(),
+    count: Math.min(Math.max(0, this.kogepanConfidence || 0), 3)
+  };
+
   localStorage.setItem(
     this.getKogepanConfidenceKey(),
-    String(this.kogepanConfidence || 0)
+    JSON.stringify(data)
   );
 }
   getBakeryTitleInfo(graduatedCount) {
@@ -1397,14 +1463,17 @@ updateHomeTitleDisplay() {
 }
  
   showStartScreen() {
-
   this.hideAllScreens();
+
   this.updateTotalProgressDisplay();
   this.updateUnitStatusDisplay();
-  this.updateKogepanConfidenceDisplay();
-  document.getElementById("screen-start").classList.remove("hidden");
-  this.updateTodayTrayDisplay();
   this.updateHomeTitleDisplay();
+  this.updateKogepanConfidenceDisplay();
+  this.updateTodayTrayDisplay();
+
+  document.getElementById("screen-start").classList.remove("hidden");
+
+  this.updateHomeKogepanMood();
 }
 getMaxUnit() {
   return Math.max(1, Math.ceil(this.words.length / this.unitSize));
@@ -2489,8 +2558,10 @@ showResultScreen() {
   this.isCurrentTrayComplete() &&
   !this.extraPracticeRewardGiven
 ) {
-  this.kogepanConfidence = (this.kogepanConfidence || 0) + 1;
+  this.kogepanConfidence = Math.min((this.kogepanConfidence || 0) + 1, 3);
   this.saveKogepanConfidence();
+  this.updateKogepanConfidenceDisplay();
+  this.updateHomeKogepanMood();
   this.extraPracticeRewardGiven = true;
   this.showToast("こげぱんの自信が1あがったよ 🍞");
 }
@@ -2547,8 +2618,8 @@ if (resultTitle && resultSubtitle) {
 
   if (wasExtraPractice) {
   resultTitle.textContent = "おかわり焼き成功！";
-  resultSubtitle.textContent = "こげぱんの自信が少し増えたよ 🍞";
-} else if (isTrayComplete) {
+  resultSubtitle.textContent = "こげぱんの自信 +1 🍞";
+}else if (isTrayComplete) {
   if (this.isLastTodayTray()) {
     resultTitle.textContent = "パン焼き完了！";
     resultSubtitle.textContent = "ぜんぶ焼けたよ 🍞";
@@ -2621,9 +2692,9 @@ const commentEl = document.getElementById("result-summary-comment");
 
 if (commentEl) {
   if (wasExtraPractice) {
-    commentEl.innerText =
-      "こげぱん「もう一回焼いたら、ちょっと自信ついた…！」";
-  } else if (leftCount === 0) {
+  commentEl.innerText =
+    "こげぱん「おかわり練習、効いてる気がする…！」";
+} else if (leftCount === 0) {
     commentEl.innerText =
       "こげぱん「ぜんぶ焼けたね…！」";
   } else if (todayNewCleanCount >= this.dailyCleanGoal) {
