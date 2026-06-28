@@ -149,14 +149,19 @@
       0/3　まだこれから…
     </div>
     <div
+  <div
   id="home-kogepan-mood"
   class="mt-3 bg-white/70 border border-amber-100 rounded-2xl px-3 py-2 flex items-center gap-3 text-left"
 >
-  <div id="home-kogepan-face" class="w-14 h-14 flex items-center justify-center shrink-0">
-</div>
+  <div
+    id="home-kogepan-face"
+    class="w-16 h-16 flex items-center justify-center shrink-0"
+  >
+  </div>
+
   <div
     id="home-kogepan-message"
-    class="text-[11px] text-amber-800 font-bold leading-relaxed"
+    class="flex-1 text-[11px] text-amber-800 font-bold leading-relaxed"
   >
     こげぱん「まだちょっと不安だけど…がんばる…」
   </div>
@@ -334,6 +339,38 @@
       <div id="today-left-count" class="text-lg font-black text-amber-950">0</div>
     </div>
   </div>
+  <div
+  id="random-event-card"
+  class="hidden mt-4 bg-white/80 border border-orange-200 rounded-3xl p-4 text-left shadow-sm"
+>
+  <div class="text-[10px] text-orange-500 font-black text-center mb-2">
+    ✨ ベーカリーのできごと
+  </div>
+
+  <div class="flex items-center gap-3">
+    <div
+      id="random-event-icon"
+      class="w-12 h-12 rounded-full flex items-center justify-center bg-orange-100 border-2 border-orange-200 text-2xl shrink-0"
+    >
+      🐈
+    </div>
+
+    <div class="flex-1">
+      <div
+        id="random-event-title"
+        class="text-sm font-black text-amber-950"
+      >
+        レオンが見に来た
+      </div>
+      <div
+        id="random-event-message"
+        class="mt-1 text-[11px] text-amber-700 font-bold leading-relaxed"
+      >
+        こげぱん「見られてると、ちょっと緊張する…」
+      </div>
+    </div>
+  </div>
+</div>
 </div>
 
         <button
@@ -477,7 +514,7 @@
           <text x="165" y="140" font-size="12" fill="#888" font-weight="bold">はぁ</text>
         </svg>
       `,
-    　  mood0: `
+    mood0: `
     <svg viewBox="0 0 120 120" class="w-full h-full drop-shadow-sm" xmlns="http://www.w3.org/2000/svg">
       <ellipse cx="60" cy="62" rx="42" ry="34" fill="#8B5A2B"/>
       <ellipse cx="60" cy="54" rx="38" ry="28" fill="#A86A33"/>
@@ -540,6 +577,73 @@
     </svg>
   `
     };
+    const ExtraPracticeRandomEvents = [
+  {
+    type: "leon",
+    icon: "🐈",
+    iconClass: "bg-orange-100 border-orange-300",
+    title: "レオンが見に来た",
+    message: "レオン「……じっ」\nこげぱん「見られてると、ちょっと緊張する…」"
+  },
+  {
+    type: "leon",
+    icon: "🐈",
+    iconClass: "bg-orange-100 border-orange-300",
+    title: "レオンがパンかごで寝ている",
+    message: "こげぱん「そこ、焼き上がり置き場なんだけど…」"
+  },
+  {
+  {
+  type: "cotta",
+  icon: "",
+  iconClass: "bg-white border-stone-300",
+  iconSvg: `
+    <svg viewBox="0 0 80 80" class="w-10 h-10" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="40" cy="42" r="25" fill="#FFFDF8" stroke="#8B7D6B" stroke-width="3"/>
+      <path d="M20 28 L28 10 L36 30 Z" fill="#FFFDF8" stroke="#8B7D6B" stroke-width="3" stroke-linejoin="round"/>
+      <path d="M44 30 L52 10 L60 28 Z" fill="#FFFDF8" stroke="#8B7D6B" stroke-width="3" stroke-linejoin="round"/>
+      <path d="M31 38 Q35 42 39 38" stroke="#4B3A2A" stroke-width="3" fill="none" stroke-linecap="round"/>
+      <path d="M45 38 Q49 42 53 38" stroke="#4B3A2A" stroke-width="3" fill="none" stroke-linecap="round"/>
+      <path d="M40 44 L37 48 L43 48 Z" fill="#E8A0A0"/>
+      <path d="M40 49 Q35 55 30 51" stroke="#4B3A2A" stroke-width="3" fill="none" stroke-linecap="round"/>
+      <path d="M40 49 Q45 55 50 51" stroke="#4B3A2A" stroke-width="3" fill="none" stroke-linecap="round"/>
+      <path d="M17 42 C7 40, 5 35, 9 31" stroke="#8B7D6B" stroke-width="3" fill="none" stroke-linecap="round"/>
+      <path d="M63 42 C73 40, 75 35, 71 31" stroke="#8B7D6B" stroke-width="3" fill="none" stroke-linecap="round"/>
+      <path d="M25 61 Q40 70 55 61" fill="#EDE6DC" opacity="0.8"/>
+    </svg>
+  `,
+  title: "コッタが応援に来た",
+  message: "コッタ「にゃー！」\nこげぱん「なんか、応援された気がする…！」"
+},
+{
+  type: "cotta",
+  icon: "",
+  iconClass: "bg-white border-stone-300",
+  iconSvg: `
+    <svg viewBox="0 0 80 80" class="w-10 h-10" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="40" cy="42" r="25" fill="#FFFDF8" stroke="#8B7D6B" stroke-width="3"/>
+      <path d="M20 28 L28 10 L36 30 Z" fill="#FFFDF8" stroke="#8B7D6B" stroke-width="3" stroke-linejoin="round"/>
+      <path d="M44 30 L52 10 L60 28 Z" fill="#FFFDF8" stroke="#8B7D6B" stroke-width="3" stroke-linejoin="round"/>
+      <circle cx="33" cy="39" r="3" fill="#4B3A2A"/>
+      <circle cx="49" cy="39" r="3" fill="#4B3A2A"/>
+      <path d="M40 45 L37 49 L43 49 Z" fill="#E8A0A0"/>
+      <path d="M33 55 Q40 59 47 55" stroke="#4B3A2A" stroke-width="3" fill="none" stroke-linecap="round"/>
+      <path d="M18 42 C8 40, 6 35, 10 31" stroke="#8B7D6B" stroke-width="3" fill="none" stroke-linecap="round"/>
+      <path d="M62 42 C72 40, 74 35, 70 31" stroke="#8B7D6B" stroke-width="3" fill="none" stroke-linecap="round"/>
+      <path d="M24 61 Q40 70 56 61" fill="#EDE6DC" opacity="0.8"/>
+    </svg>
+  `,
+  title: "コッタがくんくんしている",
+  message: "こげぱん「これは食べものじゃなくて、英単語のパン…たぶん…」"
+},
+  {
+    type: "both",
+    icon: "🐾",
+    iconClass: "bg-amber-100 border-amber-300",
+    title: "レオンとコッタが見守っている",
+    message: "レオン「……」\nコッタ「にゃ」\nこげぱん「なんか、今日はひとりじゃないかも…」"
+  }
+];
   </script>
 
   <!-- アプリケーションロジック -->
@@ -996,7 +1100,8 @@
   this.kogepanConfidence = this.loadKogepanConfidence();
   this.isExtraPractice = false;
   this.extraPracticeRewardGiven = false;
-  this.extraPracticeClearGoal = 3;
+  this.extraPracticeClearGoal = 5;
+  this.extraPracticeCleared = false;
 
   // 今日のパン焼きは軽めに終われるようにする
   this.dailyCleanGoal = 5;
@@ -1084,39 +1189,82 @@ updateHomeKogepanMood() {
 
   const confidence = Math.min(Math.max(0, this.kogepanConfidence || 0), 3);
 
-  if (confidence >= 3) {
-    faceEl.innerHTML = `
-      <div class="w-12 h-12 flex items-center justify-center">
-        ${CharacterSVGs.mood3}
-      </div>
-    `;
-    messageEl.textContent =
-      "こげぱん「今日はかなり自信あるかも…！もう一回いける…！」";
-  } else if (confidence >= 2) {
-    faceEl.innerHTML = `
-      <div class="w-12 h-12 flex items-center justify-center">
-        ${CharacterSVGs.mood2}
-      </div>
-    `;
-    messageEl.textContent =
-      "こげぱん「なんか、少しわかってきた気がする…！」";
-  } else if (confidence >= 1) {
-    faceEl.innerHTML = `
-      <div class="w-12 h-12 flex items-center justify-center">
-        ${CharacterSVGs.mood1}
-      </div>
-    `;
-    messageEl.textContent =
-      "こげぱん「ちょっとだけ自信ついた…たぶん…」";
-  } else {
-    faceEl.innerHTML = `
-      <div class="w-12 h-12 flex items-center justify-center">
-        ${CharacterSVGs.mood0}
-      </div>
-    `;
-    messageEl.textContent =
-      "こげぱん「まだちょっと不安だけど…がんばる…」";
-  }
+  const moodSvgs = [
+    `
+      <svg viewBox="0 0 120 120" class="w-full h-full drop-shadow-sm" xmlns="http://www.w3.org/2000/svg">
+        <ellipse cx="60" cy="62" rx="42" ry="34" fill="#8B5A2B"/>
+        <ellipse cx="60" cy="54" rx="38" ry="28" fill="#A86A33"/>
+        <path d="M25 55 C30 25, 90 25, 95 55" fill="#B8753B"/>
+        <circle cx="45" cy="58" r="4" fill="#3B2414"/>
+        <circle cx="75" cy="58" r="4" fill="#3B2414"/>
+        <path d="M52 76 Q60 70 68 76" stroke="#3B2414" stroke-width="4" fill="none" stroke-linecap="round"/>
+        <path d="M37 47 Q45 42 53 47" stroke="#3B2414" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <path d="M67 47 Q75 42 83 47" stroke="#3B2414" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <circle cx="36" cy="70" r="5" fill="#C98557" opacity="0.55"/>
+        <circle cx="84" cy="70" r="5" fill="#C98557" opacity="0.55"/>
+      </svg>
+    `,
+    `
+      <svg viewBox="0 0 120 120" class="w-full h-full drop-shadow-sm" xmlns="http://www.w3.org/2000/svg">
+        <ellipse cx="60" cy="62" rx="42" ry="34" fill="#8B5A2B"/>
+        <ellipse cx="60" cy="54" rx="38" ry="28" fill="#A86A33"/>
+        <path d="M25 55 C30 25, 90 25, 95 55" fill="#B8753B"/>
+        <circle cx="45" cy="58" r="4" fill="#3B2414"/>
+        <circle cx="75" cy="58" r="4" fill="#3B2414"/>
+        <path d="M52 74 Q60 79 68 74" stroke="#3B2414" stroke-width="4" fill="none" stroke-linecap="round"/>
+        <path d="M38 48 Q45 45 52 48" stroke="#3B2414" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <path d="M68 48 Q75 45 82 48" stroke="#3B2414" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <circle cx="36" cy="70" r="5" fill="#E7A07A" opacity="0.65"/>
+        <circle cx="84" cy="70" r="5" fill="#E7A07A" opacity="0.65"/>
+      </svg>
+    `,
+    `
+      <svg viewBox="0 0 120 120" class="w-full h-full drop-shadow-sm" xmlns="http://www.w3.org/2000/svg">
+        <ellipse cx="60" cy="62" rx="42" ry="34" fill="#8B5A2B"/>
+        <ellipse cx="60" cy="54" rx="38" ry="28" fill="#A86A33"/>
+        <path d="M25 55 C30 25, 90 25, 95 55" fill="#B8753B"/>
+        <circle cx="45" cy="58" r="5" fill="#3B2414"/>
+        <circle cx="75" cy="58" r="5" fill="#3B2414"/>
+        <circle cx="47" cy="56" r="1.5" fill="#FFF3D6"/>
+        <circle cx="77" cy="56" r="1.5" fill="#FFF3D6"/>
+        <path d="M50 73 Q60 84 70 73" stroke="#3B2414" stroke-width="4" fill="none" stroke-linecap="round"/>
+        <path d="M36 45 Q45 39 54 45" stroke="#3B2414" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <path d="M66 45 Q75 39 84 45" stroke="#3B2414" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <circle cx="35" cy="70" r="6" fill="#F0A07A" opacity="0.75"/>
+        <circle cx="85" cy="70" r="6" fill="#F0A07A" opacity="0.75"/>
+      </svg>
+    `,
+    `
+      <svg viewBox="0 0 120 120" class="w-full h-full drop-shadow-sm" xmlns="http://www.w3.org/2000/svg">
+        <ellipse cx="60" cy="62" rx="42" ry="34" fill="#8B5A2B"/>
+        <ellipse cx="60" cy="54" rx="38" ry="28" fill="#A86A33"/>
+        <path d="M25 55 C30 25, 90 25, 95 55" fill="#B8753B"/>
+        <path d="M40 56 Q45 62 50 56" stroke="#3B2414" stroke-width="4" fill="none" stroke-linecap="round"/>
+        <path d="M70 56 Q75 62 80 56" stroke="#3B2414" stroke-width="4" fill="none" stroke-linecap="round"/>
+        <path d="M48 72 Q60 88 72 72" stroke="#3B2414" stroke-width="5" fill="none" stroke-linecap="round"/>
+        <path d="M34 45 Q45 36 56 45" stroke="#3B2414" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <path d="M64 45 Q75 36 86 45" stroke="#3B2414" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <circle cx="34" cy="69" r="7" fill="#F2A07B" opacity="0.8"/>
+        <circle cx="86" cy="69" r="7" fill="#F2A07B" opacity="0.8"/>
+        <path d="M92 28 L96 36 L105 37 L98 43 L100 52 L92 47 L84 52 L86 43 L79 37 L88 36 Z" fill="#FFD966"/>
+      </svg>
+    `
+  ];
+
+  const messages = [
+    "こげぱん「まだちょっと不安だけど…がんばる…」",
+    "こげぱん「ちょっとだけ自信ついた…たぶん…」",
+    "こげぱん「なんか、少しわかってきた気がする…！」",
+    "こげぱん「今日はかなり自信あるかも…！もう一回いける…！」"
+  ];
+
+  faceEl.innerHTML = `
+  <div class="w-14 h-14 flex items-center justify-center mx-auto">
+    ${moodSvgs[confidence]}
+  </div>
+`;
+
+  messageEl.textContent = messages[confidence];
 }
  resetToDefault() {
   this.words = WORD_DATABASE.map(w => ({
@@ -1323,11 +1471,6 @@ loadFromSaveCode(code) {
       localStorage.removeItem(key);
     }
   });
-
-  this.kogepanConfidence = 0;
-this.saveKogepanConfidence();
-this.updateKogepanConfidenceDisplay();
-this.updateHomeKogepanMood();
 
   this.unitProgress = {};
   this.clearTodayFinished();
@@ -1730,10 +1873,6 @@ clearTodayFinished() {
   localStorage.removeItem(this.getTodayFinishedKey());
 }
 
-getExtraPracticeCorrectCount() {
-  return this.roundLogs.filter(log => log.isCorrect).length;
-}
-
 getTodayString() {
   const now = new Date();
   const year = now.getFullYear();
@@ -1979,9 +2118,15 @@ return;
     this.unitProgress
   );
 }
+
+getExtraPracticeCorrectCount() {
+  return this.roundLogs.filter(log => log.isCorrect).length;
+}
+
 startExtraPractice() {
   this.isExtraPractice = true;
   this.extraPracticeRewardGiven = false;
+  this.extraPracticeCleared = false;
   this.score = 0;
   this.roundLogs = [];
   this.currentQuestionIndex = 0;
@@ -2516,17 +2661,18 @@ ${firstDiff + 1}文字目は、
   this.isExtraPractice &&
   this.getExtraPracticeCorrectCount() >= this.extraPracticeClearGoal
 ) {
+  this.extraPracticeCleared = true;
   this.showResultScreen();
   return;
 }
 
-  if (todayNewCleanCount >= this.dailyCleanGoal) {
+  if (!this.isExtraPractice && todayNewCleanCount >= this.dailyCleanGoal) {
     this.showToast("きれいぱん5こ達成！ここまででも十分。余裕があればもう少し焼こう 🍞");
     this.showResultScreen();
     return;
   }
 
-  if (this.roundLogs.length >= this.dailyQuestionLimit) {
+  if (!this.isExtraPractice && this.roundLogs.length >= this.dailyQuestionLimit) {
   this.showToast("今日は15問がんばったよ！余裕があればきれいぱんをふやそう 🍞");
   this.showResultScreen();
   return;
@@ -2643,8 +2789,7 @@ goToNextTodayTray() {
   this.startRound();
 }  
 showResultScreen() {
-  const wasExtraPractice = this.isExtraPractice;
-
+  const wasExtraPractice = this.isExtraPractice || this.extraPracticeCleared;
   this.markCurrentUnitCompleted();
 
   if (
@@ -2664,6 +2809,33 @@ showResultScreen() {
   this.isExtraPractice = false;
    const screen = document.getElementById("screen-result");
 screen.classList.remove("hidden");
+
+this.hideRandomEvent();
+
+console.log("ランダムイベント判定", {
+  wasExtraPractice,
+  isExtraPractice: this.isExtraPractice,
+  extraPracticeCleared: this.extraPracticeCleared,
+  eventCount: ExtraPracticeRandomEvents.length
+});
+
+if (wasExtraPractice && ExtraPracticeRandomEvents.length > 0) {
+  const eventChance = 1;
+
+  console.log("ランダムイベント抽選に入りました");
+
+  if (Math.random() < eventChance) {
+    const randomIndex = Math.floor(
+      Math.random() * ExtraPracticeRandomEvents.length
+    );
+
+    const event = ExtraPracticeRandomEvents[randomIndex];
+
+    console.log("ランダムイベント表示", event);
+
+    this.showRandomEvent(event);
+  }
+}
 
 const nextTrayButton = document.getElementById("btn-next-today-tray");
 const extraPracticeButton = document.getElementById("btn-extra-practice");
@@ -2710,10 +2882,10 @@ if (resultTitle && resultSubtitle) {
   const todayNewCleanCount = currentCleanCount - this.todayCleanCountAtStart;
   const reachedCleanGoal = todayNewCleanCount >= this.dailyCleanGoal;
 
-  if (wasExtraPractice) {
-  resultTitle.textContent = "おかわり焼き成功！";
-  resultSubtitle.textContent = "こげぱんの自信 +1 🍞";
-}else if (isTrayComplete) {
+ if (wasExtraPractice) {
+  resultTitle.textContent = "おかわり練習クリア！";
+  resultSubtitle.textContent = "5問正解で自信 +1 🍞";
+} else if (isTrayComplete) {
   if (this.isLastTodayTray()) {
     resultTitle.textContent = "パン焼き完了！";
     resultSubtitle.textContent = "ぜんぶ焼けたよ 🍞";
@@ -2731,6 +2903,8 @@ if (resultTitle && resultSubtitle) {
   resultTitle.textContent = "今日はここまで！";
   resultSubtitle.textContent = "また次回焼こう 🍞";
 }
+
+
 }    
 const unitStart = (this.currentUnit - 1) * this.unitSize + 1;
 const unitEnd = unitStart + this.unitSize - 1;
@@ -3072,6 +3246,41 @@ filtered.forEach(w => {
       setTimeout(() => toast.remove(), 300);
     }, 2500);
   }
+hideRandomEvent() {
+  const cardEl = document.getElementById("random-event-card");
+
+  if (!cardEl) {
+    return;
+  }
+
+  cardEl.classList.add("hidden");
+}
+
+showRandomEvent(event) {
+  const cardEl = document.getElementById("random-event-card");
+  const iconEl = document.getElementById("random-event-icon");
+  const titleEl = document.getElementById("random-event-title");
+  const messageEl = document.getElementById("random-event-message");
+
+  if (!cardEl || !iconEl || !titleEl || !messageEl) {
+    return;
+  }
+
+  iconEl.className =
+    `w-12 h-12 rounded-full flex items-center justify-center border-2 text-2xl shrink-0 ${event.iconClass}`;
+
+  if (event.iconSvg) {
+    iconEl.innerHTML = event.iconSvg;
+  } else {
+    iconEl.textContent = event.icon;
+  }
+
+  titleEl.textContent = event.title;
+  messageEl.innerText = event.message;
+
+  cardEl.classList.remove("hidden");
+}
+
   playSound(type) {
   try {
     const AudioContext = window.AudioContext || window.webkitAudioContext;
