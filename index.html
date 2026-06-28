@@ -334,6 +334,39 @@
       <div id="today-left-count" class="text-lg font-black text-amber-950">0</div>
     </div>
   </div>
+<div
+  id="random-event-card"
+  class="hidden mt-4 w-full bg-white/80 border border-orange-200 rounded-3xl p-4 text-left shadow-sm"
+>
+  <div class="text-[10px] text-orange-500 font-black text-center mb-2">
+    ✨ ベーカリーのできごと
+  </div>
+
+  <div class="flex items-center gap-3">
+    <div
+      id="random-event-icon"
+      class="w-12 h-12 rounded-full flex items-center justify-center bg-orange-100 border-2 border-orange-200 text-2xl shrink-0"
+    >
+      🐈
+    </div>
+
+    <div class="flex-1">
+      <div
+        id="random-event-title"
+        class="text-sm font-black text-amber-950"
+      >
+        レオンが見に来た
+      </div>
+      <div
+        id="random-event-message"
+        class="mt-1 text-[11px] text-amber-700 font-bold leading-relaxed"
+      >
+        こげぱん「見られてると、ちょっと緊張する…」
+      </div>
+    </div>
+  </div>
+</div>
+  
 </div>
 
         <button
@@ -477,7 +510,7 @@
           <text x="165" y="140" font-size="12" fill="#888" font-weight="bold">はぁ</text>
         </svg>
       `,
-    　  mood0: `
+    mood0: `
     <svg viewBox="0 0 120 120" class="w-full h-full drop-shadow-sm" xmlns="http://www.w3.org/2000/svg">
       <ellipse cx="60" cy="62" rx="42" ry="34" fill="#8B5A2B"/>
       <ellipse cx="60" cy="54" rx="38" ry="28" fill="#A86A33"/>
@@ -540,6 +573,43 @@
     </svg>
   `
     };
+    const ExtraPracticeRandomEvents = [
+  {
+    type: "leon",
+    icon: "🐈",
+    iconClass: "bg-orange-100 border-orange-300",
+    title: "レオンが見に来た",
+    message: "レオン「……じっ」\nこげぱん「見られてると、ちょっと緊張する…」"
+  },
+  {
+    type: "leon",
+    icon: "🐈",
+    iconClass: "bg-orange-100 border-orange-300",
+    title: "レオンがパンかごで寝ている",
+    message: "こげぱん「そこ、焼き上がり置き場なんだけど…」"
+  },
+  {
+    type: "cotta",
+    icon: "♡",
+    iconClass: "bg-white border-stone-300 text-stone-500",
+    title: "コッタが応援に来た",
+    message: "コッタ「にゃー！」\nこげぱん「なんか、応援された気がする…！」"
+  },
+  {
+    type: "cotta",
+    icon: "♡",
+    iconClass: "bg-white border-stone-300 text-stone-500",
+    title: "コッタがくんくんしている",
+    message: "こげぱん「これは食べものじゃなくて、英単語のパン…たぶん…」"
+  },
+  {
+    type: "both",
+    icon: "🐾",
+    iconClass: "bg-amber-100 border-amber-300",
+    title: "レオンとコッタが見守っている",
+    message: "レオン「……」\nコッタ「にゃ」\nこげぱん「なんか、今日はひとりじゃないかも…」"
+  }
+];
   </script>
 
   <!-- アプリケーションロジック -->
@@ -2731,6 +2801,20 @@ if (resultTitle && resultSubtitle) {
   resultTitle.textContent = "今日はここまで！";
   resultSubtitle.textContent = "また次回焼こう 🍞";
 }
+this.hideRandomEvent();
+
+if (wasExtraPractice && ExtraPracticeRandomEvents.length > 0) {
+  const eventChance = 1;
+
+  if (Math.random() < eventChance) {
+    const randomIndex = Math.floor(
+      Math.random() * ExtraPracticeRandomEvents.length
+    );
+
+    const event = ExtraPracticeRandomEvents[randomIndex];
+    this.showRandomEvent(event);
+  }
+}
 }    
 const unitStart = (this.currentUnit - 1) * this.unitSize + 1;
 const unitEnd = unitStart + this.unitSize - 1;
@@ -3072,6 +3156,36 @@ filtered.forEach(w => {
       setTimeout(() => toast.remove(), 300);
     }, 2500);
   }
+hideRandomEvent() {
+  const cardEl = document.getElementById("random-event-card");
+
+  if (!cardEl) {
+    return;
+  }
+
+  cardEl.classList.add("hidden");
+}
+
+showRandomEvent(event) {
+  const cardEl = document.getElementById("random-event-card");
+  const iconEl = document.getElementById("random-event-icon");
+  const titleEl = document.getElementById("random-event-title");
+  const messageEl = document.getElementById("random-event-message");
+
+  if (!cardEl || !iconEl || !titleEl || !messageEl) {
+    return;
+  }
+
+  iconEl.textContent = event.icon;
+  iconEl.className =
+    `w-12 h-12 rounded-full flex items-center justify-center border-2 text-2xl shrink-0 ${event.iconClass}`;
+
+  titleEl.textContent = event.title;
+  messageEl.innerText = event.message;
+
+  cardEl.classList.remove("hidden");
+}
+
   playSound(type) {
   try {
     const AudioContext = window.AudioContext || window.webkitAudioContext;
