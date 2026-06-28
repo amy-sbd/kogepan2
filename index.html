@@ -588,20 +588,46 @@
     title: "レオンがパンかごで寝ている",
     message: "こげぱん「そこ、焼き上がり置き場なんだけど…」"
   },
+ {
+  type: "cotta",
+  icon: "",
+  iconClass: "bg-white border-stone-300",
+  iconSvg: `
+    <svg viewBox="0 0 80 80" class="w-9 h-9" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="40" cy="44" r="23" fill="#FFFDF8" stroke="#8B7D6B" stroke-width="3"/>
+      <path d="M23 30 L29 14 L37 30 Z" fill="#FFFDF8" stroke="#8B7D6B" stroke-width="3" stroke-linejoin="round"/>
+      <path d="M43 30 L51 14 L57 30 Z" fill="#FFFDF8" stroke="#8B7D6B" stroke-width="3" stroke-linejoin="round"/>
+      <circle cx="32" cy="42" r="3" fill="#4B3A2A"/>
+      <circle cx="48" cy="42" r="3" fill="#4B3A2A"/>
+      <path d="M40 47 L37 50 L43 50 Z" fill="#E8A0A0"/>
+      <path d="M34 55 Q40 59 46 55" stroke="#4B3A2A" stroke-width="3" fill="none" stroke-linecap="round"/>
+      <path d="M18 43 C10 42, 8 37, 11 34" stroke="#8B7D6B" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+      <path d="M62 43 C70 42, 72 37, 69 34" stroke="#8B7D6B" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+    </svg>
+  `,
+  title: "コッタが応援に来た",
+  message: "コッタ「にゃー！」\nこげぱん「なんか、応援された気がする…！」"
+},
   {
-    type: "cotta",
-    icon: "♡",
-    iconClass: "bg-white border-stone-300 text-stone-500",
-    title: "コッタが応援に来た",
-    message: "コッタ「にゃー！」\nこげぱん「なんか、応援された気がする…！」"
-  },
-  {
-    type: "cotta",
-    icon: "♡",
-    iconClass: "bg-white border-stone-300 text-stone-500",
-    title: "コッタがくんくんしている",
-    message: "こげぱん「これは食べものじゃなくて、英単語のパン…たぶん…」"
-  },
+  type: "cotta",
+  icon: "",
+  iconClass: "bg-white border-stone-300",
+  iconSvg: `
+    <svg viewBox="0 0 80 80" class="w-9 h-9" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="40" cy="44" r="23" fill="#FFFDF8" stroke="#8B7D6B" stroke-width="3"/>
+      <path d="M23 30 L29 14 L37 30 Z" fill="#FFFDF8" stroke="#8B7D6B" stroke-width="3" stroke-linejoin="round"/>
+      <path d="M43 30 L51 14 L57 30 Z" fill="#FFFDF8" stroke="#8B7D6B" stroke-width="3" stroke-linejoin="round"/>
+      <path d="M29 42 Q32 45 35 42" stroke="#4B3A2A" stroke-width="3" fill="none" stroke-linecap="round"/>
+      <path d="M45 42 Q48 45 51 42" stroke="#4B3A2A" stroke-width="3" fill="none" stroke-linecap="round"/>
+      <path d="M40 47 L37 50 L43 50 Z" fill="#E8A0A0"/>
+      <path d="M34 54 Q40 57 46 54" stroke="#4B3A2A" stroke-width="3" fill="none" stroke-linecap="round"/>
+      <path d="M18 43 C10 42, 8 37, 11 34" stroke="#8B7D6B" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+      <path d="M62 43 C70 42, 72 37, 69 34" stroke="#8B7D6B" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+    </svg>
+  `,
+  title: "コッタがくんくんしている",
+  message: "こげぱん「これは食べものじゃなくて、英単語のパン…たぶん…」"
+},
   {
     type: "both",
     icon: "🐾",
@@ -3176,16 +3202,20 @@ showRandomEvent(event) {
     return;
   }
 
-  iconEl.textContent = event.icon;
   iconEl.className =
     `w-12 h-12 rounded-full flex items-center justify-center border-2 text-2xl shrink-0 ${event.iconClass}`;
+
+  if (event.iconSvg) {
+    iconEl.innerHTML = event.iconSvg;
+  } else {
+    iconEl.textContent = event.icon;
+  }
 
   titleEl.textContent = event.title;
   messageEl.innerText = event.message;
 
   cardEl.classList.remove("hidden");
 }
-
   playSound(type) {
   try {
     const AudioContext = window.AudioContext || window.webkitAudioContext;
