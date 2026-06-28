@@ -1535,41 +1535,134 @@ saveKogepanConfidence() {
   );
 }
   getBakeryTitleInfo(graduatedCount) {
-  let title = "こげぱん見習い";
-  let nextGoal = "まずは5個のきれいぱんを焼こう！";
+  const titles = [
+    {
+      count: 400,
+      title: "こげぱんベーカリー殿堂入り",
+      next: null
+    },
+    {
+      count: 350,
+      title: "こげぱんグランドマスター",
+      nextCount: 400,
+      nextTitle: "こげぱんベーカリー殿堂入り"
+    },
+    {
+      count: 300,
+      title: "伝説のベーカリー店長",
+      nextCount: 350,
+      nextTitle: "こげぱんグランドマスター"
+    },
+    {
+      count: 250,
+      title: "伝説のパン焼き係",
+      nextCount: 300,
+      nextTitle: "伝説のベーカリー店長"
+    },
+    {
+      count: 200,
+      title: "黄金のパン職人",
+      nextCount: 250,
+      nextTitle: "伝説のパン焼き係"
+    },
+    {
+      count: 175,
+      title: "こげぱんマイスター",
+      nextCount: 200,
+      nextTitle: "黄金のパン職人"
+    },
+    {
+      count: 150,
+      title: "きれいぱん名人",
+      nextCount: 175,
+      nextTitle: "こげぱんマイスター"
+    },
+    {
+      count: 125,
+      title: "町の人気パン職人",
+      nextCount: 150,
+      nextTitle: "きれいぱん名人"
+    },
+    {
+      count: 100,
+      title: "ベーカリー店長",
+      nextCount: 125,
+      nextTitle: "町の人気パン職人"
+    },
+    {
+      count: 75,
+      title: "ベーカリー副店長",
+      nextCount: 100,
+      nextTitle: "ベーカリー店長"
+    },
+    {
+      count: 50,
+      title: "キレイパン職人",
+      nextCount: 75,
+      nextTitle: "ベーカリー副店長"
+    },
+    {
+      count: 40,
+      title: "ベーカリー修行中",
+      nextCount: 50,
+      nextTitle: "キレイパン職人"
+    },
+    {
+      count: 30,
+      title: "小さなパン職人",
+      nextCount: 40,
+      nextTitle: "ベーカリー修行中"
+    },
+    {
+      count: 20,
+      title: "こんがり職人",
+      nextCount: 30,
+      nextTitle: "小さなパン職人"
+    },
+    {
+      count: 15,
+      title: "朝のベーカリー係",
+      nextCount: 20,
+      nextTitle: "こんがり職人"
+    },
+    {
+      count: 10,
+      title: "こげぱん助手",
+      nextCount: 15,
+      nextTitle: "朝のベーカリー係"
+    },
+    {
+      count: 5,
+      title: "パン焼き係",
+      nextCount: 10,
+      nextTitle: "こげぱん助手"
+    },
+    {
+      count: 3,
+      title: "はじめての焼き上げ係",
+      nextCount: 5,
+      nextTitle: "パン焼き係"
+    },
+    {
+      count: 0,
+      title: "見習いパン焼き",
+      nextCount: 3,
+      nextTitle: "はじめての焼き上げ係"
+    }
+  ];
 
-  if (graduatedCount >= 400) {
-    title = "こげぱんベーカリー殿堂入り";
-    nextGoal = "すごすぎる…このベーカリー、ぜんぶきれいぱんだらけ！";
-  } else if (graduatedCount >= 300) {
-    title = "伝説のベーカリー店長";
-    nextGoal = `あと${400 - graduatedCount}個で「こげぱんベーカリー殿堂入り」！`;
-  } else if (graduatedCount >= 200) {
-    title = "黄金のパン職人";
-    nextGoal = `あと${300 - graduatedCount}個で「伝説のベーカリー店長」！`;
-  } else if (graduatedCount >= 150) {
-    title = "きれいぱん名人";
-    nextGoal = `あと${200 - graduatedCount}個で「黄金のパン職人」！`;
-  } else if (graduatedCount >= 100) {
-    title = "ベーカリー店長";
-    nextGoal = `あと${150 - graduatedCount}個で「きれいぱん名人」！`;
-  } else if (graduatedCount >= 50) {
-    title = "キレイパン職人";
-    nextGoal = `あと${100 - graduatedCount}個で「ベーカリー店長」！`;
-  } else if (graduatedCount >= 20) {
-    title = "こんがり職人";
-    nextGoal = `あと${50 - graduatedCount}個で「キレイパン職人」！`;
-  } else if (graduatedCount >= 5) {
-    title = "パン焼き係";
-    nextGoal = `あと${20 - graduatedCount}個で「こんがり職人」！`;
-  } else {
-    title = "見習いパン焼き";
-    nextGoal = `あと${5 - graduatedCount}個で「パン焼き係」！`;
+  const currentTitle = titles.find(item => graduatedCount >= item.count);
+
+  if (!currentTitle.nextCount) {
+    return {
+      title: currentTitle.title,
+      nextGoal: "すごすぎる…このベーカリー、ぜんぶきれいぱんだらけ！"
+    };
   }
 
   return {
-    title,
-    nextGoal
+    title: currentTitle.title,
+    nextGoal: `あと${currentTitle.nextCount - graduatedCount}個で「${currentTitle.nextTitle}」！`
   };
 }
   hideAllScreens() {
