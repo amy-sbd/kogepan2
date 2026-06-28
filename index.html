@@ -2787,6 +2787,7 @@ if (nextTrayButton) {
 
 const resultTitle = document.getElementById("result-title");
 const resultSubtitle = document.getElementById("result-subtitle");
+const todayResultSummary = document.getElementById("today-result-summary");
 
 if (resultTitle && resultSubtitle) {
   const isTrayComplete = this.isCurrentTrayComplete();
@@ -2827,6 +2828,36 @@ if (resultTitle && resultSubtitle) {
   resultTitle.textContent = "今日はここまで！";
   resultSubtitle.textContent = "また次回焼こう 🍞";
 }
+if (wasExtraPractice) {
+  resultTitle.textContent = "おかわり練習クリア！";
+  resultSubtitle.textContent = "3問正解で自信 +1 🍞";
+} else if (isTrayComplete) {
+  if (this.isLastTodayTray()) {
+    resultTitle.textContent = "パン焼き完了！";
+    resultSubtitle.textContent = "ぜんぶ焼けたよ 🍞";
+  } else {
+    resultTitle.textContent = "トレイ完了！";
+    resultSubtitle.textContent = "次のトレイもあるよ";
+  }
+} else if (reachedCleanGoal) {
+  resultTitle.textContent = "今日はここまで！";
+  resultSubtitle.textContent = `きれいぱん${this.dailyCleanGoal}こ達成 🥐`;
+} else if (reachedQuestionLimit) {
+  resultTitle.textContent = "今日はここまで！";
+  resultSubtitle.textContent = `${this.dailyQuestionLimit}問がんばったよ 🍞`;
+} else {
+  resultTitle.textContent = "今日はここまで！";
+  resultSubtitle.textContent = "また次回焼こう 🍞";
+}
+
+if (todayResultSummary) {
+  if (wasExtraPractice) {
+    todayResultSummary.classList.add("hidden");
+  } else {
+    todayResultSummary.classList.remove("hidden");
+  }
+}
+
 this.hideRandomEvent();
 
 if (wasExtraPractice && ExtraPracticeRandomEvents.length > 0) {
@@ -2867,7 +2898,7 @@ const leftCount = unitWords.filter(w => {
 const completeCelebrationEl = document.getElementById("tray-complete-celebration");
 
 if (completeCelebrationEl) {
-  if (leftCount === 0) {
+  if (!wasExtraPractice && leftCount === 0) {
     completeCelebrationEl.classList.remove("hidden");
   } else {
     completeCelebrationEl.classList.add("hidden");
