@@ -183,8 +183,13 @@
   </div>
 </div> 
 </div>
-        <button onclick="app.startRound()" class="w-full bg-[#9C6644] hover:bg-[#7F5539] text-white text-lg font-bold py-4 px-6 rounded-2xl shadow-lg border-b-4 border-[#5C4033] btn-bounce flex items-center justify-center gap-2">
-  <span>🥖</span> 今日のパンを焼く
+        <button
+  id="btn-start"
+  onclick="app.startRound()"
+  class="w-full bg-[#9C6644] hover:bg-[#7F5539] text-white text-lg font-bold py-4 px-6 rounded-2xl shadow-lg border-b-4 border-[#5C4033] btn-bounce flex items-center justify-center gap-2"
+>
+  <span>🥖</span>
+  <span id="btn-start-text">今日のパンを焼く</span>
 </button>
 
 <button onclick="app.confirmReset()" class="text-xs text-amber-600 underline">
@@ -1736,6 +1741,7 @@ updateHomeTitleDisplay() {
   this.updateHomeTitleDisplay();
   this.updateKogepanConfidenceDisplay();
   this.updateTodayTrayDisplay();
+  this.updateStartButtonMode();
 
   document.getElementById("screen-start").classList.remove("hidden");
 
@@ -1973,7 +1979,26 @@ isUnitCompleted(unitNumber) {
   const unitKey = String(unitNumber);
   return Boolean(this.unitProgress[unitKey]?.completedAt);
 }
+updateStartButtonMode() {
+  const startBtn = document.getElementById("btn-start");
 
+  if (!startBtn) {
+    return;
+  }
+
+  const canExtraPractice = (this.kogepanConfidence || 0) < 3;
+
+  if (this.isTodayFinished() && canExtraPractice) {
+    startBtn.textContent = "おかわり練習で自信をつける 🍞";
+    startBtn.onclick = () => this.startExtraPractice();
+  } else if (this.isTodayFinished() && !canExtraPractice) {
+    startBtn.textContent = "今日はここまで 🍞";
+    startBtn.onclick = () => this.showToast("今日のおかわり練習はここまで 🍞");
+  } else {
+    startBtn.textContent = "今日のパンを焼く 🍞";
+    startBtn.onclick = () => this.startRound();
+  }
+}
 loadUnitProgress() {
   const newKey = this.getUnitProgressKey();
   const oldKey = "kogepanUnitProgressV1";
