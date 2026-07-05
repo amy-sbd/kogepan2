@@ -1820,10 +1820,23 @@ updateHomeStartButton() {
     return;
   }
 
-  const shouldShowExtraPractice =
-  this.isCurrentReviewTray() &&
-  this.isLastTodayTray() &&
-  this.isCurrentTrayComplete();
+  const today = this.getTodayString();
+
+const reviewedToday = Object.values(this.unitProgress || {}).some(progress => {
+  return progress && progress.lastReviewedAt === today;
+});
+
+let hasDueReview = false;
+
+for (let unit = 1; unit <= this.getMaxUnit(); unit++) {
+  if (this.getDueReviewDay(unit) !== null) {
+    hasDueReview = true;
+    break;
+  }
+}
+
+const shouldShowExtraPractice =
+  reviewedToday && !hasDueReview;
 
   if (shouldShowExtraPractice) {
     startButtonText.textContent = "おかわり練習で自信をつける";
