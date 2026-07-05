@@ -183,8 +183,13 @@
   </div>
 </div> 
 </div>
-        <button onclick="app.startRound()" class="w-full bg-[#9C6644] hover:bg-[#7F5539] text-white text-lg font-bold py-4 px-6 rounded-2xl shadow-lg border-b-4 border-[#5C4033] btn-bounce flex items-center justify-center gap-2">
-  <span>🥖</span> 今日のパンを焼く
+        <button
+  id="btn-start"
+  onclick="app.startRound()"
+  class="w-full bg-[#9C6644] hover:bg-[#7F5539] text-white text-lg font-bold py-4 px-6 rounded-2xl shadow-lg border-b-4 border-[#5C4033] btn-bounce flex items-center justify-center gap-2"
+>
+  <span>🥖</span>
+  <span id="btn-start-text">今日のパンを焼く</span>
 </button>
 
 <button onclick="app.confirmReset()" class="text-xs text-amber-600 underline">
@@ -1273,7 +1278,7 @@ updateHomeKogepanMood() {
   }
 
   generateSaveCode() {
-  const compactData = this.words.map(w => [
+  const compactWords = this.words.map(w => [
     w.id,
     w.s1Correct || 0,
     w.s3Correct || 0,
@@ -1283,8 +1288,20 @@ updateHomeKogepanMood() {
     w.lastAnsweredAt || 0
   ]);
 
+  const saveData = {
+    version: 2,
+    words: compactWords,
+    unitProgress: this.unitProgress || {}
+  };
+
   try {
-    return btoa(JSON.stringify(compactData));
+    return btoa(
+      unescape(
+        encodeURIComponent(
+          JSON.stringify(saveData)
+        )
+      )
+    );
   } catch (e) {
     return "";
   }
@@ -1292,10 +1309,38 @@ updateHomeKogepanMood() {
 
 loadFromSaveCode(code) {
   try {
-    const decodedStr = atob(code.trim());
-    const compactData = JSON.parse(decodedStr);
+    const decodedBinary = atob(code.trim());
 
-    if (!Array.isArray(compactData)) {
+    let decodedStr;
+
+    try {
+      decodedStr = decodeURIComponent(escape(decodedBinary));
+    } catch (error) {
+      decodedStr = decodedBinary;
+    }
+
+    const parsedData = JSON.parse(decodedStr);
+
+    let compactData = null;
+    let restoredUnitProgress = null;
+
+    // 新しい保存形式
+    if (
+      parsedData &&
+      typeof parsedData === "object" &&
+      !Array.isArray(parsedData) &&
+      Array.isArray(parsedData.words)
+    ) {
+      compactData = parsedData.words;
+      restoredUnitProgress = parsedData.unitProgress || {};
+    }
+
+    // これまでの旧保存形式
+    else if (Array.isArray(parsedData)) {
+      compactData = parsedData;
+    }
+
+    else {
       return false;
     }
 
@@ -1303,7 +1348,7 @@ loadFromSaveCode(code) {
       const found = compactData.find(item => item[0] === w.id);
 
       if (found) {
-        // 新形式：
+        // 現在の単語保存形式
         // [0] id
         // [1] s1Correct
         // [2] s3Correct
@@ -1318,17 +1363,19 @@ loadFromSaveCode(code) {
           w.s3Streak = found[4] || 0;
           w.wrongCount = found[5] || 0;
           w.lastAnsweredAt = found[6] || 0;
-        } else {
-          // 旧形式：
-          // [0] id
-          // [1] s1Correct
-          // [2] s2Correct
-          // [3] s3Correct
-          // [4] s1Streak
-          // [5] s2Streak
-          // [6] s3Streak
-          // [7] wrongCount
-          // [8] lastAnsweredAt
+        }
+
+        // さらに古い保存形式
+        // [0] id
+        // [1] s1Correct
+        // [2] s2Correct
+        // [3] s3Correct
+        // [4] s1Streak
+        // [5] s2Streak
+        // [6] s3Streak
+        // [7] wrongCount
+        // [8] lastAnsweredAt
+        else {
           w.s1Correct = found[1] || 0;
           w.s3Correct = found[3] || 0;
           w.s1Streak = found[4] || 0;
@@ -1345,10 +1392,23 @@ loadFromSaveCode(code) {
       }
     });
 
+    // 新しいじゅもんの場合だけ復習スケジュールも復元
+    if (restoredUnitProgress !== null) {
+      this.unitProgress = restoredUnitProgress;
+
+      localStorage.setItem(
+        `kogepanUnitProgress_${this.wordSetId}_V1`,
+        JSON.stringify(this.unitProgress)
+      );
+    }
+
     this.saveData();
     this.updateTotalProgressDisplay();
+
     return true;
+
   } catch (e) {
+    console.error("復活のじゅもん読み込みエラー", e);
     return false;
   }
 }
@@ -1388,10 +1448,19 @@ loadFromSaveCode(code) {
     const success = this.loadFromSaveCode(inputVal);
 
     if (success) {
-      this.showToast("✨ おめでとう！データを無事に復活させたよ！");
-      this.closeDataModal();
-      this.showStartScreen();
-    } else {
+  localStorage.removeItem(this.getTodayFinishedKey());
+
+  this.todayUnits = this.decideTodayUnits();
+  this.todayUnitIndex = 0;
+
+  if (this.todayUnits.length > 0) {
+    this.currentUnit = this.todayUnits[0].unit;
+  }
+
+  this.showToast("✨ おめでとう！データを無事に復活させたよ！");
+  this.closeDataModal();
+  this.showStartScreen();
+} else {
       this.showToast("❌ じゅもんが間違っているみたい。もう一度確認してね");
     }
   }
@@ -1736,6 +1805,7 @@ updateHomeTitleDisplay() {
   this.updateHomeTitleDisplay();
   this.updateKogepanConfidenceDisplay();
   this.updateTodayTrayDisplay();
+  this.updateStartButtonMode();
 
   document.getElementById("screen-start").classList.remove("hidden");
 
@@ -1973,7 +2043,26 @@ isUnitCompleted(unitNumber) {
   const unitKey = String(unitNumber);
   return Boolean(this.unitProgress[unitKey]?.completedAt);
 }
+updateStartButtonMode() {
+  const startBtn = document.getElementById("btn-start");
 
+  if (!startBtn) {
+    return;
+  }
+
+  const canExtraPractice = (this.kogepanConfidence || 0) < 3;
+
+  if (this.isTodayFinished() && canExtraPractice) {
+    startBtn.textContent = "おかわり練習で自信をつける 🍞";
+    startBtn.onclick = () => this.startExtraPractice();
+  } else if (this.isTodayFinished() && !canExtraPractice) {
+    startBtn.textContent = "今日はここまで 🍞";
+    startBtn.onclick = () => this.showToast("今日のおかわり練習はここまで 🍞");
+  } else {
+    startBtn.textContent = "今日のパンを焼く 🍞";
+    startBtn.onclick = () => this.startRound();
+  }
+}
 loadUnitProgress() {
   const newKey = this.getUnitProgressKey();
   const oldKey = "kogepanUnitProgressV1";
