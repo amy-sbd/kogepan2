@@ -1805,11 +1805,32 @@ updateHomeTitleDisplay() {
   this.updateHomeTitleDisplay();
   this.updateKogepanConfidenceDisplay();
   this.updateTodayTrayDisplay();
-  this.updateStartButtonMode();
+  this.updateHomeStartButton();
 
   document.getElementById("screen-start").classList.remove("hidden");
 
   this.updateHomeKogepanMood();
+}
+
+updateHomeStartButton() {
+  const startButton = document.getElementById("btn-start");
+  const startButtonText = document.getElementById("btn-start-text");
+
+  if (!startButton || !startButtonText) {
+    return;
+  }
+
+  const shouldShowExtraPractice =
+    this.isLastTodayTray() &&
+    this.isCurrentTrayComplete();
+
+  if (shouldShowExtraPractice) {
+    startButtonText.textContent = "おかわり練習で自信をつける";
+    startButton.setAttribute("onclick", "app.startExtraPractice()");
+  } else {
+    startButtonText.textContent = "今日のパンを焼く";
+    startButton.setAttribute("onclick", "app.startRound()");
+  }
 }
 getMaxUnit() {
   return Math.max(1, Math.ceil(this.words.length / this.unitSize));
