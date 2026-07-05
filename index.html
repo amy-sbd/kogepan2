@@ -2350,7 +2350,12 @@ this.currentWord = null;
 this.currentStage = 1;
 const todayUnit = this.getCurrentTodayUnit();
 
-if (todayUnit && todayUnit.type === "todayComplete" && !this.isExtraPractice) {
+if (
+  todayUnit &&
+  todayUnit.type === "todayComplete" &&
+  this.isCurrentUnitComplete() &&
+  !this.isExtraPractice
+) {
   this.showResultScreen();
   return;
 }
