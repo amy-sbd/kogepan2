@@ -1821,8 +1821,9 @@ updateHomeStartButton() {
   }
 
   const shouldShowExtraPractice =
-    this.isLastTodayTray() &&
-    this.isCurrentTrayComplete();
+  this.isCurrentReviewTray() &&
+  this.isLastTodayTray() &&
+  this.isCurrentTrayComplete();
 
   if (shouldShowExtraPractice) {
     startButtonText.textContent = "おかわり練習で自信をつける";
