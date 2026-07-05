@@ -1412,7 +1412,6 @@ loadFromSaveCode(code) {
     return false;
   }
 }
-
   showDataModal() {
     const code = this.generateSaveCode();
     document.getElementById("save-code-textarea").value = code;
@@ -1448,19 +1447,10 @@ loadFromSaveCode(code) {
     const success = this.loadFromSaveCode(inputVal);
 
     if (success) {
-  localStorage.removeItem(this.getTodayFinishedKey());
-
-  this.todayUnits = this.decideTodayUnits();
-  this.todayUnitIndex = 0;
-
-  if (this.todayUnits.length > 0) {
-    this.currentUnit = this.todayUnits[0].unit;
-  }
-
-  this.showToast("✨ おめでとう！データを無事に復活させたよ！");
-  this.closeDataModal();
-  this.showStartScreen();
-} else {
+      this.showToast("✨ おめでとう！データを無事に復活させたよ！");
+      this.closeDataModal();
+      this.showStartScreen();
+    } else {
       this.showToast("❌ じゅもんが間違っているみたい。もう一度確認してね");
     }
   }
@@ -1822,28 +1812,19 @@ decideTodayUnits() {
   const today = this.getTodayString();
 
   if (this.isTodayFinished()) {
-  let finishedUnitNumber = 1;
+    const finishedUnitNumber = this.currentUnit || 1;
 
-  for (let unit = 1; unit <= maxUnit; unit++) {
-    const progress = this.unitProgress[String(unit)];
+    const finishedUnit = [
+      {
+        unit: finishedUnitNumber,
+        type: "todayComplete",
+        reviewDay: null
+      }
+    ];
 
-    if (progress && progress.completedAt === today) {
-      finishedUnitNumber = unit;
-      break;
-    }
+    console.log("今日はすでにパン焼き完了です", finishedUnit);
+    return finishedUnit;
   }
-
-  const finishedUnit = [
-    {
-      unit: finishedUnitNumber,
-      type: "todayComplete",
-      reviewDay: null
-    }
-  ];
-
-  console.log("今日はすでにパン焼き完了です", finishedUnit);
-  return finishedUnit;
-}
 
   // 今日完了したユニットがある場合は、更新しても次ユニットへ進まない
   for (let unit = 1; unit <= maxUnit; unit++) {
